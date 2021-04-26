@@ -87,7 +87,7 @@ public class Main extends JFrame {
 
     private void initComponents() {
         this.setDefaultCloseOperation(3);
-        this.setSize(600, 700);
+        this.setSize(1400, 900);
         this.setMinimumSize(new Dimension(400, 600));
         this.setTitle("News Scrapper");
         this.dir = System.getProperty("user.dir") + "\\resources\\";
@@ -103,11 +103,11 @@ public class Main extends JFrame {
         this.setLocation((d.width - this.getWidth()) / 2, (d.height - this.getHeight()) / 2);
         this.body = new JPanel();
         this.body.setLayout((LayoutManager)null);
-        this.body.setBackground(new Color(-1054, true));
+        this.body.setBackground(new Color(0xFFFFF8F8, true));
         this.topComponents = new JPanel(new GridLayout(1, 5, 10, 10));
         this.topComponents.setSize(this.getWidth() - 18, 60);
         this.topComponents.setLocation(1, 5);
-        this.topComponents.setBackground(new Color(-9, true));
+        this.topComponents.setBackground(new Color(0xFFFDF6F6, true));
         this.topComponents.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Source selection"));
         this.currency = new JLabel("Currency");
         this.currency.setForeground(Color.BLUE);
@@ -122,7 +122,7 @@ public class Main extends JFrame {
                 Main.this.headersTimer.start();
             }
         });
-        this.connectionButton.setForeground(new Color(2391842));
+        this.connectionButton.setForeground(new Color(0x247F22));
         this.connectionButton.setText("Connect");
         this.srcBox = new JComboBox();
         this.srcBox.removeAll();
@@ -146,7 +146,7 @@ public class Main extends JFrame {
         this.topComponents.add(this.euroLabel);
         this.topComponents.add(this.connectionButton);
         this.logoPanel = new JPanel(new FlowLayout());
-        this.logoPanel.setSize(this.getWidth(), 140);
+        this.logoPanel.setSize(this.getWidth()/2, 140);
         this.logoPanel.setLocation(0, this.topComponents.getY() + this.topComponents.getHeight() + 5);
         this.logoPanel.setBackground(this.body.getBackground());
         this.logoLabel = new JLabel();
@@ -172,6 +172,7 @@ public class Main extends JFrame {
                 Main.this.logoMouserExited(e);
             }
         });
+        Font font = new Font("Arial", 1, 20);
         this.logoPanel.add(this.logoLabel);
         this.listPane = new JScrollPane();
         this.contentPane = new JScrollPane();
@@ -180,19 +181,23 @@ public class Main extends JFrame {
         this.tabs.setSize(this.getWidth() - 10, (this.getHeight() - 100) / 2 + 70);
         this.tabs.setLocation(0, this.logoPanel.getY() + this.logoPanel.getHeight() + 5);
         this.tabs.setBackground(new Color(-341921569, true));
+        font = new Font("Arial", 1, 14);
+        this.tabs.setFont(font);
         this.listPanel = new JPanel(new GridLayout(1, 1, 20, 20));
         this.list = new JList();
         this.listPane.setViewportView(this.listPanel);
-        this.list.setFont(new Font("Arial", 1, 15));
+        font = new Font("Arial", 1, 22);
+        this.list.setFont(font);
         this.list.setForeground(new Color(-13621857, true));
-        this.list.setBackground(new Color(-2097203, true));
+        this.list.setBackground(new Color(0xFFFFEAEA, true));
         this.list.setAutoscrolls(false);
         this.listPane.setViewportView(this.list);
         this.listPanel.add(this.listPane);
         this.tabs.addTab("Headers", this.listPanel);
         this.contentPanel = new JPanel(new BorderLayout(20, 5));
         this.content = new JTextArea();
-        this.content.setFont(new Font("Times New Roman", 1, 16));
+        font = new Font("Arial", 1, 18);
+        this.content.setFont(font);
         this.content.setText("");
         this.content.setWrapStyleWord(true);
         this.content.setLineWrap(true);

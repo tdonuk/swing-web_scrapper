@@ -60,10 +60,10 @@ public class Connection {
         Elements headerBox = this.doc.select(this.site.getContentHeaderAdress());
         String contents;
         if (!(this.site instanceof Euronews) && !(this.site instanceof Reuters)) {
-            contents = "\t\t~HEADER~\t\t\n\n" + headerBox.text() + "\n\n\t\t~DETAILS~\t\t\n\n" + textBox.text();
+            contents = "\t\tHEADER\t\t\n\n" + headerBox.text() + "\n\n\t\tDETAILS\t\t\n\n" + textBox.text();
             this.site.setContents(contents);
         } else {
-            contents = "\t\t~HEADER~\t\t\n\n" + headerBox.text() + "\n\n\t\t~DETAILS~\t\t\n\n" + textBox.first().ownText() + textBox.next().next().first().ownText() + textBox.next().next().next().first().ownText();
+            contents = "\t\tHEADER\t\t\n\n" + headerBox.text() + "\n\n\t\tDETAILS\t\t\n\n" + textBox.first().ownText() + textBox.next().next().first().ownText() + textBox.next().next().next().first().ownText();
             this.site.setContents(contents);
         }
     }
