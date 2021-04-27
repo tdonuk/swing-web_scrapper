@@ -30,10 +30,10 @@ public class Connection {
             this.contentUrls = new String[this.boxes.size()];
             int i = 0;
 
-            Iterator var4;
+            Iterator iterator;
             Element e;
-            for(var4 = this.boxes.iterator(); var4.hasNext(); ++i) {
-                e = (Element)var4.next();
+            for(iterator = this.boxes.iterator(); iterator.hasNext(); ++i) {
+                e = (Element)iterator.next();
                 this.contentUrls[i] = e.selectFirst("a").attr(this.site.getAttribute());
             }
 
@@ -42,8 +42,8 @@ public class Connection {
             this.news = new String[this.boxes.size()];
             i = 0;
 
-            for(var4 = this.boxes.iterator(); var4.hasNext(); ++i) {
-                e = (Element)var4.next();
+            for(iterator = this.boxes.iterator(); iterator.hasNext(); ++i) {
+                e = (Element)iterator.next();
                 this.news[i] = e.text();
             }
 
@@ -60,10 +60,10 @@ public class Connection {
         Elements headerBox = this.doc.select(this.site.getContentHeaderAdress());
         String contents;
         if (!(this.site instanceof Euronews) && !(this.site instanceof Reuters)) {
-            contents = "\t\tHEADER\t\t\n\n" + headerBox.text() + "\n\n\t\tDETAILS\t\t\n\n" + textBox.text();
+            contents = "HEADER\n\n" + headerBox.text() + "\n\nDETAILS\n\n" + textBox.text();
             this.site.setContents(contents);
         } else {
-            contents = "\t\tHEADER\t\t\n\n" + headerBox.text() + "\n\n\t\tDETAILS\t\t\n\n" + textBox.first().ownText() + textBox.next().next().first().ownText() + textBox.next().next().next().first().ownText();
+            contents = "HEADER\n\n" + headerBox.text() + "\n\nDETAILS\n\n" + textBox.first().ownText() + textBox.next().next().first().ownText() + textBox.next().next().next().first().ownText();
             this.site.setContents(contents);
         }
     }

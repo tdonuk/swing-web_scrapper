@@ -86,8 +86,10 @@ public class Main extends JFrame {
     }
 
     private void initComponents() {
+        //Defining initial components of the user interface
+        //this field includes only graphical adjustments
         this.setDefaultCloseOperation(3);
-        this.setSize(1400, 900);
+        this.setSize(1600, 900); //Default size
         this.setMinimumSize(new Dimension(400, 600));
         this.setTitle("News Scrapper");
         this.dir = System.getProperty("user.dir") + "\\resources\\";
