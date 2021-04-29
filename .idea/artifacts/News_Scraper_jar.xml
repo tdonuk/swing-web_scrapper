@@ -3,7 +3,7 @@
     <output-path>$PROJECT_DIR$/../../..</output-path>
     <root id="archive" name="News Scraper.jar">
       <element id="module-output" name="News Scraper" />
-      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jsoup/jsoup/1.13.1/jsoup-1.13.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../../jsoup-1.13.1.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

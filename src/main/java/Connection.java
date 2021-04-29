@@ -23,67 +23,73 @@ public class Connection {
     }
 
     public void getNews() throws IOException {
-        this.doc = Jsoup.connect(this.site.getHeadersUrl()).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
-        Elements mainBox = this.doc.select(this.site.getBoxesAdress());
+        doc = Jsoup.connect(site.getHeadersUrl()).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
+        Elements mainBox = doc.select(site.getBoxesAdress());
         if (mainBox.size() > 0) {
-            this.boxes = mainBox.select(this.site.getContentAdress());
-            this.contentUrls = new String[this.boxes.size()];
+            boxes = mainBox.select(site.getContentAdress());
+            contentUrls = new String[boxes.size()];
             int i = 0;
 
             Iterator iterator;
             Element e;
-            for(iterator = this.boxes.iterator(); iterator.hasNext(); ++i) {
+            for(iterator = boxes.iterator(); iterator.hasNext(); ++i) {
                 e = (Element)iterator.next();
-                this.contentUrls[i] = e.selectFirst("a").attr(this.site.getAttribute());
+                contentUrls[i] = e.selectFirst("a").attr(site.getAttribute());
             }
 
-            this.site.setContentUrl(this.contentUrls);
-            this.boxes = mainBox.select(this.site.getNewsAdress());
-            this.news = new String[this.boxes.size()];
+            site.setContentUrl(contentUrls);
+            boxes = mainBox.select(site.getNewsAdress());
+            news = new String[boxes.size()];
             i = 0;
 
-            for(iterator = this.boxes.iterator(); iterator.hasNext(); ++i) {
+            for(iterator = boxes.iterator(); iterator.hasNext(); ++i) {
                 e = (Element)iterator.next();
-                this.news[i] = e.text();
+                news[i] = e.text();
             }
 
-            this.site.setHeaders(this.news);
+            site.setHeaders(news);
         }
 
     }
 
     public void getContents(int index) throws IOException {
-        String[] urls = this.site.getContentUrl();
+        String[] urls = site.getContentUrl();
         int i = 0;
-        this.doc = Jsoup.connect(this.site.getUrl() + urls[index]).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
-        Elements textBox = this.doc.select(this.site.getContentTextAdress());
-        Elements headerBox = this.doc.select(this.site.getContentHeaderAdress());
+        doc = Jsoup.connect(site.getUrl() + urls[index]).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
+        Elements textBox = doc.select(site.getContentTextAdress());
+        Elements headerBox = doc.select(site.getContentHeaderAdress());
         String contents;
-        if (!(this.site instanceof Euronews) && !(this.site instanceof Reuters)) {
+        if (!(site instanceof Euronews) && !(site instanceof Reuters)) {
             contents = "HEADER\n\n" + headerBox.text() + "\n\nDETAILS\n\n" + textBox.text();
-            this.site.setContents(contents);
+            site.setContents(contents);
         } else {
             contents = "HEADER\n\n" + headerBox.text() + "\n\nDETAILS\n\n" + textBox.first().ownText() + textBox.next().next().first().ownText() + textBox.next().next().next().first().ownText();
-            this.site.setContents(contents);
+            site.setContents(contents);
         }
     }
 
     public float[] getCurrency() throws IOException {
-        this.doc = Jsoup.connect(this.site.getHeadersUrl()).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
-        Elements mainBox = this.doc.select(this.site.getBoxesAdress());
+        doc = Jsoup.connect(site.getHeadersUrl()).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
+        Elements mainBox = doc.select(site.getBoxesAdress());
         if (mainBox.size() > 0) {
-            this.boxes = mainBox.select(this.site.getNewsAdress());
-            this.currencies = new String[2];
-            this.cur = new float[2];
-            this.currencies[0] = ((Element)this.boxes.get(0)).ownText();
-            float parsed = Float.parseFloat(String.format(this.currencies[0].replaceAll(",", "."), "%1.4f"));
-            this.cur[0] = parsed;
-            this.currencies[1] = ((Element)this.boxes.get(1)).ownText();
-            parsed = Float.parseFloat(this.currencies[1].replaceAll(",", "."));
-            this.cur[1] = parsed;
+            boxes = mainBox.select(site.getNewsAdress());
+            currencies = new String[3];
+            cur = new float[3];
+
+            currencies[0] = boxes.get(1).ownText();
+            float parsed = Float.parseFloat(String.format(currencies[0].replaceAll(",", "."), "%.4f"));
+            cur[0] = parsed;
+
+            currencies[1] = boxes.get(2).ownText();
+            parsed = Float.parseFloat(String.format(currencies[1].replaceAll(",", "."), "%.4f"));
+            cur[1] = parsed;
+
+            currencies[2] = boxes.get(7).ownText();
+            parsed = Float.parseFloat(String.format(currencies[2].replaceAll(",", "."), "%.4f"));
+            cur[2] = parsed;
         }
 
-        return this.cur;
+        return cur;
     }
 
     public void connect(String url) throws IOException, URISyntaxException {

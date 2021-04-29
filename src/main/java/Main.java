@@ -58,6 +58,7 @@ public class Main extends JFrame {
     private JLabel usdLabel;
     private JLabel euroLabel;
     private JLabel logoLabel;
+    private JLabel interestLabel;
     private JLabel currentHeaderLabel;
     private JTextArea content;
     private String dir = "";
@@ -67,181 +68,184 @@ public class Main extends JFrame {
     private String[] oldData = null;
     private Timer currencyTimer = new Timer(2000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            Main.this.getCurrency(e);
+            getCurrency(e);
         }
     });
     private Timer headersTimer = new Timer(8000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
-            Main.this.getHeaders(e);
+            getHeaders(e);
         }
     });
     private float oldUsd = 0.0F;
     private float oldEuro = 0.0F;
-    private float[] cur = new float[2];
+    private float oldInterest = 0.0F;
+    private float[] cur = new float[3];
 
     public Main() {
-        this.initComponents();
-        this.currencyTimer.setInitialDelay(0);
-        this.currencyTimer.start();
+        initComponents();
+        currencyTimer.setInitialDelay(0);
+        currencyTimer.start();
     }
 
     private void initComponents() {
         //Defining initial components of the user interface
         //this field includes only graphical adjustments
-        this.setDefaultCloseOperation(3);
-        this.setSize(1600, 900); //Default size
-        this.setMinimumSize(new Dimension(400, 600));
-        this.setTitle("News Scrapper");
-        this.dir = System.getProperty("user.dir") + "\\resources\\";
+        setDefaultCloseOperation(3);
+        setSize(1600, 900); //Default size
+        setMinimumSize(new Dimension(400, 600));
+        setTitle("News Scrapper");
+        dir = System.getProperty("user.dir") + "\\resources\\";
 
         try {
-            this.setIconImage(ImageIO.read(new File(this.dir + "main_logo.resources")));
+            setIconImage(ImageIO.read(new File(dir + "main_logo.resources")));
         } catch (IOException var7) {
             JOptionPane.showMessageDialog(this, "Resource files not  found", "File error", 0);
             System.exit(1);
         }
 
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-        this.setLocation((d.width - this.getWidth()) / 2, (d.height - this.getHeight()) / 2);
-        this.body = new JPanel();
-        this.body.setLayout((LayoutManager)null);
-        this.body.setBackground(new Color(0xFFFFF8F8, true));
-        this.topComponents = new JPanel(new GridLayout(1, 5, 10, 10));
-        this.topComponents.setSize(this.getWidth() - 18, 60);
-        this.topComponents.setLocation(1, 5);
-        this.topComponents.setBackground(new Color(0xFFFDF6F6, true));
-        this.topComponents.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Source selection"));
-        this.currency = new JLabel("Currency");
-        this.currency.setForeground(Color.BLUE);
-        this.usdLabel = new JLabel();
-        this.euroLabel = new JLabel();
-        this.connectionButton = new JToggleButton("Connection");
-        this.connectionButton.setEnabled(false);
-        this.connectionButton.addActionListener(new ActionListener() {
+        setLocation((d.width - getWidth()) / 2, (d.height - getHeight()) / 2);
+        body = new JPanel();
+        body.setLayout(null);
+        body.setBackground(new Color(0xFFFFF8F8, true));
+        topComponents = new JPanel(new GridLayout(1, 5, 10, 10));
+        topComponents.setSize(getWidth() - 18, 60);
+        topComponents.setLocation(1, 5);
+        topComponents.setBackground(new Color(0xFFFDF6F6, true));
+        topComponents.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Source selection"));
+        currency = new JLabel("Currency");
+        currency.setForeground(Color.BLUE);
+        usdLabel = new JLabel();
+        euroLabel = new JLabel();
+        interestLabel = new JLabel();
+        connectionButton = new JToggleButton("Connection");
+        connectionButton.setEnabled(false);
+        connectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Main.this.getHeaders(e);
-                Main.this.headersTimer.setInitialDelay(8000);
-                Main.this.headersTimer.start();
+                getHeaders(e);
+                headersTimer.setInitialDelay(8000);
+                headersTimer.start();
             }
         });
-        this.connectionButton.setForeground(new Color(0x247F22));
-        this.connectionButton.setText("Connect");
-        this.srcBox = new JComboBox();
-        this.srcBox.removeAll();
+        connectionButton.setForeground(new Color(0x247F22));
+        connectionButton.setText("Connect");
+        srcBox = new JComboBox();
+        srcBox.removeAll();
         String[] boxContents = new String[]{"Haberturk", "CNN", "NTV", "Reuters", "Euronews"};
         String[] var3 = boxContents;
         int var4 = boxContents.length;
 
         for(int var5 = 0; var5 < var4; ++var5) {
             String s = var3[var5];
-            this.srcBox.addItem(s);
+            srcBox.addItem(s);
         }
 
-        this.srcBox.addActionListener(new ActionListener() {
+        srcBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Main.this.srcBoxAction(e);
+                srcBoxAction(e);
             }
         });
-        this.topComponents.add(this.srcBox);
-        this.topComponents.add(this.currency);
-        this.topComponents.add(this.usdLabel);
-        this.topComponents.add(this.euroLabel);
-        this.topComponents.add(this.connectionButton);
-        this.logoPanel = new JPanel(new FlowLayout());
-        this.logoPanel.setSize(this.getWidth()/2, 140);
-        this.logoPanel.setLocation(0, this.topComponents.getY() + this.topComponents.getHeight() + 5);
-        this.logoPanel.setBackground(this.body.getBackground());
-        this.logoLabel = new JLabel();
-        this.logoLabel.addMouseListener(new MouseAdapter() {
+        topComponents.add(srcBox);
+        topComponents.add(currency);
+        topComponents.add(usdLabel);
+        topComponents.add(euroLabel);
+        topComponents.add(interestLabel);
+        topComponents.add(connectionButton);
+        logoPanel = new JPanel(new FlowLayout());
+        logoPanel.setSize(getWidth()/2, 140);
+        logoPanel.setLocation(0, topComponents.getY() + topComponents.getHeight() + 5);
+        logoPanel.setBackground(body.getBackground());
+        logoLabel = new JLabel();
+        logoLabel.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
 
                 try {
-                    Main.this.logoMouserClicked(e);
+                    logoMouserClicked(e);
                 } catch (Exception var3) {
-                    JOptionPane.showMessageDialog(Main.this.connectButton, "Not possible to connect  " + Main.this.site.getUrl(), "Connection error", 0);
+                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
                 }
 
             }
 
             public void mouseEntered(MouseEvent e) {
                 super.mouseEntered(e);
-                Main.this.logoMouserEntered(e);
+                logoMouserEntered(e);
             }
 
             public void mouseExited(MouseEvent e) {
                 super.mouseExited(e);
-                Main.this.logoMouserExited(e);
+                logoMouserExited(e);
             }
         });
         Font font = new Font("Arial", 1, 20);
-        this.logoPanel.add(this.logoLabel);
-        this.listPane = new JScrollPane();
-        this.contentPane = new JScrollPane();
-        this.tabs = new JTabbedPane();
-        this.tabs.removeAll();
-        this.tabs.setSize(this.getWidth() - 10, (this.getHeight() - 100) / 2 + 70);
-        this.tabs.setLocation(0, this.logoPanel.getY() + this.logoPanel.getHeight() + 5);
-        this.tabs.setBackground(new Color(-341921569, true));
+        logoPanel.add(logoLabel);
+        listPane = new JScrollPane();
+        contentPane = new JScrollPane();
+        tabs = new JTabbedPane();
+        tabs.removeAll();
+        tabs.setSize(getWidth() - 10, (getHeight() - 100) / 2 + 100);
+        tabs.setLocation(0, logoPanel.getY() + logoPanel.getHeight() + 5);
+        tabs.setBackground(new Color(-341921569, true));
         font = new Font("Arial", 1, 14);
-        this.tabs.setFont(font);
-        this.listPanel = new JPanel(new GridLayout(1, 1, 20, 20));
-        this.list = new JList();
-        this.listPane.setViewportView(this.listPanel);
+        tabs.setFont(font);
+        listPanel = new JPanel(new GridLayout(1, 1, 20, 20));
+        list = new JList();
+        listPane.setViewportView(listPanel);
         font = new Font("Arial", 1, 22);
-        this.list.setFont(font);
-        this.list.setForeground(new Color(-13621857, true));
-        this.list.setBackground(new Color(0xFFFFEAEA, true));
-        this.list.setAutoscrolls(false);
-        this.listPane.setViewportView(this.list);
-        this.listPanel.add(this.listPane);
-        this.tabs.addTab("Headers", this.listPanel);
-        this.contentPanel = new JPanel(new BorderLayout(20, 5));
-        this.content = new JTextArea();
+        list.setFont(font);
+        list.setForeground(new Color(-13621857, true));
+        list.setBackground(new Color(0xFFFFEAEA, true));
+        list.setAutoscrolls(false);
+        listPane.setViewportView(list);
+        listPanel.add(listPane);
+        tabs.addTab("Headers", listPanel);
+        contentPanel = new JPanel(new BorderLayout(20, 5));
+        content = new JTextArea();
         font = new Font("Arial", 1, 18);
-        this.content.setFont(font);
-        this.content.setText("");
-        this.content.setWrapStyleWord(true);
-        this.content.setLineWrap(true);
-        this.content.setAutoscrolls(false);
-        this.content.setBackground(this.list.getBackground());
-        this.content.setEditable(false);
-        this.currentHeaderLabel = new JLabel("");
-        this.currentHeaderLabel.setLabelFor(this.content);
-        this.currentHeaderLabel.setForeground(Color.BLUE);
-        this.contentPane.setViewportView(this.content);
-        this.currentHeaderLabel.setFont(new Font("Arial", 1, 16));
-        this.contentPanel.add(this.currentHeaderLabel, "North");
-        this.contentPanel.add(this.contentPane, "Center");
-        this.tabs.addTab("Contents", this.contentPanel);
-        this.tabs.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Content Area"));
-        this.downComponents = new JPanel(new GridBagLayout());
-        this.downComponents.setBackground(this.topComponents.getBackground());
-        this.downComponents.setSize(this.getWidth() - 15, this.topComponents.getHeight());
-        this.downComponents.setLocation(0, this.getHeight() - 90);
-        this.exitButton = new JButton("Exit");
-        this.exitButton.addActionListener(new ActionListener() {
+        content.setFont(font);
+        content.setText("");
+        content.setWrapStyleWord(true);
+        content.setLineWrap(true);
+        content.setAutoscrolls(false);
+        content.setBackground(list.getBackground());
+        content.setEditable(false);
+        currentHeaderLabel = new JLabel("");
+        currentHeaderLabel.setLabelFor(content);
+        currentHeaderLabel.setForeground(Color.BLUE);
+        contentPane.setViewportView(content);
+        currentHeaderLabel.setFont(new Font("Arial", 1, 16));
+        contentPanel.add(currentHeaderLabel, "North");
+        contentPanel.add(contentPane, "Center");
+        tabs.addTab("Contents", contentPanel);
+        tabs.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Content Area"));
+        downComponents = new JPanel(new GridBagLayout());
+        downComponents.setBackground(topComponents.getBackground());
+        downComponents.setSize(getWidth() - 15, topComponents.getHeight());
+        downComponents.setLocation(0, getHeight() - 90);
+        exitButton = new JButton("Exit");
+        exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Main.this.ExitButtonAction(e);
+                ExitButtonAction(e);
             }
         });
-        this.connectButton = new JButton("Read More");
-        this.connectButton.addActionListener(new ActionListener() {
+        connectButton = new JButton("Read More");
+        connectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Main.this.ConnectButtonAction(e);
+                    ConnectButtonAction(e);
                 } catch (IOException var3) {
-                    JOptionPane.showMessageDialog(Main.this.connectButton, "Not possible to connect  " + Main.this.site.getUrl(), "Connection error", 0);
+                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
                 } catch (URISyntaxException var4) {
-                    JOptionPane.showMessageDialog(Main.this.connectButton, "Not possible to connect  " + Main.this.site.getUrl(), "Connection error", 0);
+                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
                 }
 
             }
         });
-        this.examineButton = new JButton("Examine");
-        this.examineButton.addActionListener(new ActionListener() {
+        examineButton = new JButton("Examine");
+        examineButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Main.this.ExamineButtonAction(e);
+                ExamineButtonAction(e);
             }
         });
         GridBagConstraints c = new GridBagConstraints();
@@ -251,24 +255,24 @@ public class Main extends JFrame {
         c.anchor = 17;
         c.gridx = 0;
         c.gridy = 0;
-        c.insets = new Insets(15, 5, 15, 0);
-        this.downComponents.add(this.examineButton, c);
+        c.insets = new Insets(5, 5, 15, 0);
+        downComponents.add(examineButton, c);
         c.gridx = 1;
         c.gridy = 0;
-        c.insets = new Insets(15, 5, 15, 5);
+        c.insets = new Insets(5, 5, 15, 5);
         c.anchor = 17;
-        this.downComponents.add(this.connectButton, c);
+        downComponents.add(connectButton, c);
         c.anchor = 13;
         c.weightx = 1.0D;
         c.gridx = 2;
         c.gridy = 0;
         c.fill = 3;
-        this.downComponents.add(this.exitButton, c);
-        this.body.add(this.topComponents);
-        this.body.add(this.logoPanel);
-        this.body.add(this.tabs);
-        this.body.add(this.downComponents);
-        this.add(this.body);
+        downComponents.add(exitButton, c);
+        body.add(topComponents);
+        body.add(logoPanel);
+        body.add(tabs);
+        body.add(downComponents);
+        add(body);
     }
 
     public static void main(String[] args) {
@@ -290,67 +294,75 @@ public class Main extends JFrame {
         });
     }
 
-    private void timerActionCurrency(ActionEvent e) {
-        this.getCurrency(e);
-    }
-
     private void timerActionHeaders(ActionEvent e) {
-        this.getHeaders(e);
+        getHeaders(e);
     }
 
     private void getCurrency(ActionEvent e) {
+
         Website site = new Currency();
-        this.con = new Connection(site);
-        this.oldUsd = this.cur[0];
-        this.oldEuro = this.cur[1];
+        con = new Connection(site);
+        oldUsd = cur[0];
+        oldEuro = cur[1];
+        oldInterest = cur[2];
+
+        Color green = new Color(2069513);
+        Color red = new Color(10032399);
 
         try {
-            this.cur = this.con.getCurrency();
+            cur = con.getCurrency();
         } catch (IOException var4) {
-            JOptionPane.showMessageDialog(this, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
+            JOptionPane.showMessageDialog(this, "Not possible to connect Currency service", "Connection error", 0);
         }
 
-        if (this.cur[0] > this.oldUsd) {
-            this.usdLabel.setForeground(new Color(2069513));
-            this.usdLabel.setText("$ : " + this.cur[0]);
-        } else if (this.cur[0] < this.oldUsd) {
-            this.usdLabel.setForeground(new Color(10032399));
-            this.usdLabel.setText("$ : " + this.cur[0]);
+        if (cur[0] > oldUsd) {
+            usdLabel.setForeground(green);
+            usdLabel.setText("$ : " + cur[0]);
+        } else {
+            usdLabel.setForeground(red);
+            usdLabel.setText("$ : " + cur[0]);
         }
 
-        if (this.cur[1] > this.oldEuro) {
-            this.euroLabel.setForeground(new Color(2069513));
-            this.euroLabel.setText("€ : " + this.cur[1]);
-        } else if (this.cur[1] < this.oldEuro) {
-            this.euroLabel.setForeground(new Color(10032399));
-            this.euroLabel.setText("€ : " + this.cur[1]);
+        if (cur[1] > oldEuro) {
+            euroLabel.setForeground(green);
+            euroLabel.setText("€ : " + cur[1]);
+        } else  {
+            euroLabel.setForeground(red);
+            euroLabel.setText("€ : " + cur[1]);
         }
 
+        if (cur[2] > oldInterest) {
+            interestLabel.setForeground(green);
+            interestLabel.setText("Int %: " + cur[2]);
+        } else  {
+            interestLabel.setForeground(red);
+            interestLabel.setText("Int %: " + cur[2]);
+        }
     }
 
     private void getHeaders(ActionEvent e) {
-        if (this.connectionButton.isSelected()) {
-            Connection con = new Connection(this.site);
+        if (connectionButton.isSelected()) {
+            Connection con = new Connection(site);
 
             try {
                 con.getNews();
-                this.oldData = this.site.getHeaders();
+                oldData = site.getHeaders();
             } catch (IOException var9) {
-                JOptionPane.showMessageDialog(this, "Not possible to connect  " + this.site.getUrl(), "Connection error", 0);
+                JOptionPane.showMessageDialog(this, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
                 return;
             }
 
-            if (this.list.getModel().getSize() <= 1) {
-                this.list.setListData(this.site.getHeaders());
+            if (list.getModel().getSize() <= 1) {
+                list.setListData(site.getHeaders());
             } else {
                 int i = 0;
                 boolean check = true;
-                String[] var5 = this.oldData;
+                String[] var5 = oldData;
                 int var6 = var5.length;
 
                 for(int var7 = 0; var7 < var6; ++var7) {
                     String s = var5[var7];
-                    if (!s.equals(this.list.getModel().getElementAt(i).toString())) {
+                    if (!s.equals(list.getModel().getElementAt(i).toString())) {
                         check = false;
                     }
 
@@ -358,87 +370,87 @@ public class Main extends JFrame {
                 }
 
                 if (!check) {
-                    this.list.setListData(this.site.getHeaders());
+                    list.setListData(site.getHeaders());
                 }
             }
 
-            this.connectionButton.setForeground(new Color(9515047));
-            this.connectionButton.setText("Disconnect");
-            this.srcBox.setEnabled(false);
+            connectionButton.setForeground(new Color(9515047));
+            connectionButton.setText("Disconnect");
+            srcBox.setEnabled(false);
         } else {
             String[] nullData = new String[]{""};
-            this.list.setListData(nullData);
-            this.content.setText("");
-            this.currentHeaderLabel.setText("");
-            this.connectionButton.setForeground(new Color(4886847));
-            this.connectionButton.setText("Connect");
-            this.srcBox.setEnabled(true);
-            this.tabs.setSelectedIndex(0);
+            list.setListData(nullData);
+            content.setText("");
+            currentHeaderLabel.setText("");
+            connectionButton.setForeground(new Color(4886847));
+            connectionButton.setText("Connect");
+            srcBox.setEnabled(true);
+            tabs.setSelectedIndex(0);
         }
 
     }
 
     private void srcBoxAction(ActionEvent e) {
-        this.dir = System.getProperty("user.dir") + "\\resources\\";
-        int index = this.srcBox.getSelectedIndex();
+        dir = System.getProperty("user.dir") + "\\resources\\";
+        int index = srcBox.getSelectedIndex();
         String logoName = "";
         switch(index) {
             case 0:
                 logoName = "ht_logo.resources";
-                this.site = new Haberturk();
+                site = new Haberturk();
                 break;
             case 1:
                 logoName = "cnn_logo.resources";
-                this.site = new Cnn();
+                site = new Cnn();
                 break;
             case 2:
                 logoName = "NTV_logo.resources";
-                this.site = new Ntv();
+                site = new Ntv();
                 break;
             case 3:
                 logoName = "reut_logo.resources";
-                this.site = new Reuters();
+                site = new Reuters();
                 break;
             case 4:
                 logoName = "eun_logo.resources";
-                this.site = new Euronews();
+                site = new Euronews();
         }
 
-        this.dir = this.dir + logoName;
+        dir = dir + logoName;
 
         try {
-            this.img = ImageIO.read(new File(this.dir));
-            this.icon = new ImageIcon(this.img.getScaledInstance(400, this.logoPanel.getHeight(), 4));
-            this.connectionButton.setEnabled(true);
+            img = ImageIO.read(new File(dir));
+            icon = new ImageIcon(img.getScaledInstance(400, logoPanel.getHeight(), 4));
+            connectionButton.setEnabled(true);
         } catch (IOException var5) {
             JOptionPane.showMessageDialog(this, logoName + " not found.", "File error", 0);
             System.exit(1);
         }
 
-        this.logoLabel.setIcon(this.icon);
+        logoLabel.setIcon(icon);
     }
 
     private void frameResizedAction(ComponentEvent e) {
-        this.tabs.setSize(this.getWidth() - 10, (this.getHeight() - 100) / 2 + 70);
-        this.tabs.updateUI();
-        this.topComponents.setSize(this.getWidth() - 18, this.topComponents.getHeight());
-        this.topComponents.updateUI();
-        this.logoPanel.setSize(this.getWidth(), this.logoPanel.getHeight());
-        this.logoPanel.updateUI();
-        this.downComponents.setLocation(0, this.getHeight() - 90);
-        this.downComponents.setSize(this.getWidth() - 15, this.downComponents.getHeight());
-        this.downComponents.updateUI();
+        tabs.setSize(getWidth() - 10, (getHeight() - 100) / 2 + 190);
+        tabs.updateUI();
+        topComponents.setSize(getWidth() - 18, topComponents.getHeight());
+        topComponents.updateUI();
+        logoPanel.setSize(getWidth(), logoPanel.getHeight());
+        logoPanel.updateUI();
+        downComponents.setLocation(0, getHeight() - 90);
+        downComponents.setSize(getWidth() - 15, downComponents.getHeight());
+        downComponents.updateUI();
     }
 
     private void ExamineButtonAction(ActionEvent e) {
         try {
-            Connection con = new Connection(this.site);
-            con.getContents(this.list.getSelectedIndex());
-            String c = this.site.getContent();
-            this.content.setText(c);
-            this.content.setCaretPosition(0);
-            this.currentHeaderLabel.setText(this.list.getSelectedValue().toString());
-            this.tabs.setSelectedIndex(1);
+            Connection con = new Connection(site);
+            con.getContents(list.getSelectedIndex());
+            String c = site.getContent();
+            content.setText(c);
+            content.setCaretPosition(0);
+            currentHeaderLabel.setText(list.getSelectedValue().toString());
+            tabs.setSelectedIndex(1);
         } catch (IOException var4) {
             System.out.println("connection error");
         }
@@ -450,19 +462,19 @@ public class Main extends JFrame {
     }
 
     private void ConnectButtonAction(ActionEvent e) throws IOException, URISyntaxException {
-        String s = this.site.getUrl() + this.site.getContentUrl()[this.list.getSelectedIndex()];
-        this.con.connect(s);
+        String s = site.getUrl() + site.getContentUrl()[list.getSelectedIndex()];
+        con.connect(s);
     }
 
     public void logoMouserEntered(MouseEvent e) {
-        this.setCursor(12);
+        setCursor(12);
     }
 
     public void logoMouserExited(MouseEvent e) {
-        this.setCursor(0);
+        setCursor(0);
     }
 
     public void logoMouserClicked(MouseEvent e) throws IOException, URISyntaxException {
-        this.con.connect(this.site.getUrl());
+        con.connect(site.getUrl());
     }
 }

@@ -1,7 +1,8 @@
 class Currency implements Website {
-    private String headersUrl = "https://www.bloomberght.com/doviz";
-    private String boxesAdress = "div[class='header'] div[class='widget-economy-data type1'] div[id='HeaderMarkets']";
-    private String newsAdress = "ul li a[href^='/doviz'] span[class='data-info'] small[data-type='son_fiyat']";
+    private String headersUrl = "https://kur.doviz.com/serbest-piyasa/";
+    private String boxesAdress = "div[class='header-secondary'] div[class='header-container'] div[class='market-data']";
+    private String newsAdress = "div[class='item'] span[class^='value']";
+    private String url = "Bloomberg (Currency)";
 
     Currency() {
     }
