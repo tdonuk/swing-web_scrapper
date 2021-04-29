@@ -59,6 +59,7 @@ public class Main extends JFrame {
     private JLabel euroLabel;
     private JLabel logoLabel;
     private JLabel interestLabel;
+    private JLabel gbpLabel;
     private JLabel currentHeaderLabel;
     private JTextArea content;
     private String dir = "";
@@ -76,10 +77,12 @@ public class Main extends JFrame {
             getHeaders(e);
         }
     });
+    //These are used to check changes in currency values
     private float oldUsd = 0.0F;
     private float oldEuro = 0.0F;
     private float oldInterest = 0.0F;
-    private float[] cur = new float[3];
+    private float oldGbp = 0.0F;
+    private float[] cur = new float[4];
 
     public Main() {
         initComponents();
@@ -118,6 +121,7 @@ public class Main extends JFrame {
         usdLabel = new JLabel();
         euroLabel = new JLabel();
         interestLabel = new JLabel();
+        gbpLabel = new JLabel();
         connectionButton = new JToggleButton("Connection");
         connectionButton.setEnabled(false);
         connectionButton.addActionListener(new ActionListener() {
@@ -149,6 +153,7 @@ public class Main extends JFrame {
         topComponents.add(currency);
         topComponents.add(usdLabel);
         topComponents.add(euroLabel);
+        topComponents.add(gbpLabel);
         topComponents.add(interestLabel);
         topComponents.add(connectionButton);
         logoPanel = new JPanel(new FlowLayout());
@@ -305,9 +310,10 @@ public class Main extends JFrame {
         oldUsd = cur[0];
         oldEuro = cur[1];
         oldInterest = cur[2];
+        oldGbp = cur[3];
 
-        Color green = new Color(2069513);
-        Color red = new Color(10032399);
+        Color green = new Color(0x1DAA1D);
+        Color red = new Color(0xFF0000);
 
         try {
             cur = con.getCurrency();
@@ -333,10 +339,18 @@ public class Main extends JFrame {
 
         if (cur[2] > oldInterest) {
             interestLabel.setForeground(green);
-            interestLabel.setText("Int %: " + cur[2]);
+            interestLabel.setText("Int % : " + cur[2]);
         } else  {
             interestLabel.setForeground(red);
-            interestLabel.setText("Int %: " + cur[2]);
+            interestLabel.setText("Int % : " + cur[2]);
+        }
+
+        if (cur[3] > oldInterest) {
+            gbpLabel.setForeground(green);
+            gbpLabel.setText("Sterlin : " + cur[3]);
+        } else  {
+            gbpLabel.setForeground(red);
+            gbpLabel.setText("Sterlin : " + cur[3]);
         }
     }
 

@@ -73,8 +73,8 @@ public class Connection {
         Elements mainBox = doc.select(site.getBoxesAdress());
         if (mainBox.size() > 0) {
             boxes = mainBox.select(site.getNewsAdress());
-            currencies = new String[3];
-            cur = new float[3];
+            currencies = new String[4];
+            cur = new float[4];
 
             currencies[0] = boxes.get(1).ownText();
             float parsed = Float.parseFloat(String.format(currencies[0].replaceAll(",", "."), "%.4f"));
@@ -87,6 +87,10 @@ public class Connection {
             currencies[2] = boxes.get(7).ownText();
             parsed = Float.parseFloat(String.format(currencies[2].replaceAll(",", "."), "%.4f"));
             cur[2] = parsed;
+
+            currencies[3] = boxes.get(3).ownText();
+            parsed = Float.parseFloat(String.format(currencies[3].replaceAll(",", "."), "%.4f"));
+            cur[3] = parsed;
         }
 
         return cur;
