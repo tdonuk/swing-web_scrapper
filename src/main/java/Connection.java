@@ -8,9 +8,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.swing.*;
+
 public class Connection {
     private Website site;
-    private Document doc;
+    private Document newsDoc,currencyDoc,doc;
     private Elements boxes;
     private String[] news;
     private String[] currencies;
@@ -23,28 +25,26 @@ public class Connection {
     }
 
     public void getNews() throws IOException {
-        doc = Jsoup.connect(site.getHeadersUrl()).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
-        Elements mainBox = doc.select(site.getBoxesAdress());
+        newsDoc = Jsoup.connect(site.getHeadersUrl()).get();
+        Elements mainBox = newsDoc.select(site.getBoxesAdress());
         if (mainBox.size() > 0) {
             boxes = mainBox.select(site.getContentAdress());
             contentUrls = new String[boxes.size()];
             int i = 0;
-
-            Iterator iterator;
-            Element e;
-            for(iterator = boxes.iterator(); iterator.hasNext(); ++i) {
-                e = (Element)iterator.next();
+            
+            for(Element e : boxes) {
                 contentUrls[i] = e.selectFirst("a").attr(site.getAttribute());
+                i++;
             }
 
             site.setContentUrl(contentUrls);
             boxes = mainBox.select(site.getNewsAdress());
             news = new String[boxes.size()];
-            i = 0;
 
-            for(iterator = boxes.iterator(); iterator.hasNext(); ++i) {
-                e = (Element)iterator.next();
+            i = 0;
+            for(Element e : boxes) {
                 news[i] = e.text();
+                i++;
             }
 
             site.setHeaders(news);
@@ -55,7 +55,7 @@ public class Connection {
     public void getContents(int index) throws IOException {
         String[] urls = site.getContentUrl();
         int i = 0;
-        doc = Jsoup.connect(site.getUrl() + urls[index]).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
+        doc = Jsoup.connect(site.getUrl() + urls[index]).get();
         Elements textBox = doc.select(site.getContentTextAdress());
         Elements headerBox = doc.select(site.getContentHeaderAdress());
         String contents;
@@ -69,12 +69,12 @@ public class Connection {
     }
 
     public float[] getCurrency() throws IOException {
-        doc = Jsoup.connect(site.getHeadersUrl()).userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36").get();
-        Elements mainBox = doc.select(site.getBoxesAdress());
+        currencyDoc = Jsoup.connect(site.getHeadersUrl()).get();
+        Elements mainBox = currencyDoc.select(site.getBoxesAdress());
         if (mainBox.size() > 0) {
             boxes = mainBox.select(site.getNewsAdress());
-            currencies = new String[4];
-            cur = new float[4];
+            currencies = new String[5];
+            cur = new float[currencies.length];
 
             currencies[0] = boxes.get(1).ownText();
             float parsed = Float.parseFloat(String.format(currencies[0].replaceAll(",", "."), "%.4f"));
@@ -91,6 +91,10 @@ public class Connection {
             currencies[3] = boxes.get(3).ownText();
             parsed = Float.parseFloat(String.format(currencies[3].replaceAll(",", "."), "%.4f"));
             cur[3] = parsed;
+
+            currencies[4] = boxes.get(0).ownText();
+            parsed = Float.parseFloat(String.format(currencies[4].replaceAll(",", "."), "%.4f"));
+            cur[4] = parsed;
         }
 
         return cur;

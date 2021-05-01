@@ -1,47 +1,17 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JToggleButton;
-import javax.swing.Timer;
 
 public class Main extends JFrame {
     private Image img = null;
     private Icon icon = null;
     private JPanel body;
     private JPanel topComponents;
-    private JPanel logoPanel;
+    private JPanel statusPanel;
     private JPanel listPanel;
     private JPanel contentPanel;
     private JPanel downComponents;
@@ -60,29 +30,34 @@ public class Main extends JFrame {
     private JLabel logoLabel;
     private JLabel interestLabel;
     private JLabel gbpLabel;
+    private JLabel goldLabel;
     private JLabel currentHeaderLabel;
+    private JLabel statusLabel;
     private JTextArea content;
     private String dir = "";
     private String logoName = "";
     private Website site;
     private Connection con;
     private String[] oldData = null;
-    private Timer currencyTimer = new Timer(2000, new ActionListener() {
+    private Timer currencyTimer = new Timer(6000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             getCurrency(e);
         }
     });
-    private Timer headersTimer = new Timer(8000, new ActionListener() {
+    private Timer headersTimer = new Timer(10000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             getHeaders(e);
         }
     });
+
+
     //These are used to check changes in currency values
     private float oldUsd = 0.0F;
     private float oldEuro = 0.0F;
     private float oldInterest = 0.0F;
     private float oldGbp = 0.0F;
-    private float[] cur = new float[4];
+    private float oldGold = 0.0F;
+    private float[] cur = new float[5];
 
     public Main() {
         initComponents();
@@ -94,53 +69,54 @@ public class Main extends JFrame {
         //Defining initial components of the user interface
         //this field includes only graphical adjustments
         setDefaultCloseOperation(3);
-        setSize(1600, 900); //Default size
+        setSize(1500, 900); //Default size
         setMinimumSize(new Dimension(400, 600));
-        setTitle("News Scrapper");
+        setTitle("News Scraper");
         dir = System.getProperty("user.dir") + "\\resources\\";
 
         try {
-            setIconImage(ImageIO.read(new File(dir + "main_logo.resources")));
-        } catch (IOException var7) {
-            JOptionPane.showMessageDialog(this, "Resource files not  found", "File error", 0);
+            setIconImage(ImageIO.read(new File(dir + "main_icon.resources")));
+        } catch (IOException ioexc) {
+            JOptionPane.showMessageDialog(this, "Resource files not found. Please be sure that resources folder and exe file must be in the same folder", "File error", 0);
             System.exit(1);
         }
 
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation((d.width - getWidth()) / 2, (d.height - getHeight()) / 2);
-        body = new JPanel();
-        body.setLayout(null);
-        body.setBackground(new Color(0xFFFFF8F8, true));
+
         topComponents = new JPanel(new GridLayout(1, 5, 10, 10));
-        topComponents.setSize(getWidth() - 18, 60);
-        topComponents.setLocation(1, 5);
         topComponents.setBackground(new Color(0xFFFDF6F6, true));
-        topComponents.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Source selection"));
+        topComponents.setBorder(BorderFactory.createLineBorder(Color.black));
+
         currency = new JLabel("Currency");
         currency.setForeground(Color.BLUE);
         usdLabel = new JLabel();
         euroLabel = new JLabel();
         interestLabel = new JLabel();
         gbpLabel = new JLabel();
+        goldLabel = new JLabel();
+
         connectionButton = new JToggleButton("Connection");
         connectionButton.setEnabled(false);
         connectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getHeaders(e);
-                headersTimer.setInitialDelay(8000);
+                headersTimer.setInitialDelay(10000);
                 headersTimer.start();
             }
         });
         connectionButton.setForeground(new Color(0x247F22));
         connectionButton.setText("Connect");
+
         srcBox = new JComboBox();
         srcBox.removeAll();
         String[] boxContents = new String[]{"Haberturk", "CNN", "NTV", "Reuters", "Euronews"};
         String[] var3 = boxContents;
-        int var4 = boxContents.length;
 
-        for(int var5 = 0; var5 < var4; ++var5) {
-            String s = var3[var5];
+        int boxList = boxContents.length;
+
+        for(int i = 0; i < boxList; ++i) {
+            String s = var3[i];
             srcBox.addItem(s);
         }
 
@@ -149,25 +125,28 @@ public class Main extends JFrame {
                 srcBoxAction(e);
             }
         });
+
+        statusPanel = new JPanel(new FlowLayout());
+        logoLabel = new JLabel();
+        logoLabel.setHorizontalAlignment(JLabel.RIGHT);
+
         topComponents.add(srcBox);
         topComponents.add(currency);
         topComponents.add(usdLabel);
         topComponents.add(euroLabel);
         topComponents.add(gbpLabel);
+        topComponents.add(goldLabel);
         topComponents.add(interestLabel);
+        topComponents.add(logoLabel);
         topComponents.add(connectionButton);
-        logoPanel = new JPanel(new FlowLayout());
-        logoPanel.setSize(getWidth()/2, 140);
-        logoPanel.setLocation(0, topComponents.getY() + topComponents.getHeight() + 5);
-        logoPanel.setBackground(body.getBackground());
-        logoLabel = new JLabel();
+
         logoLabel.addMouseListener(new MouseAdapter() {
             public void mouseReleased(MouseEvent e) {
                 super.mouseReleased(e);
 
                 try {
                     logoMouserClicked(e);
-                } catch (Exception var3) {
+                } catch (Exception exc) {
                     JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
                 }
 
@@ -183,29 +162,33 @@ public class Main extends JFrame {
                 logoMouserExited(e);
             }
         });
-        Font font = new Font("Arial", 1, 20);
-        logoPanel.add(logoLabel);
+        Font font;
+
         listPane = new JScrollPane();
         contentPane = new JScrollPane();
+
         tabs = new JTabbedPane();
         tabs.removeAll();
-        tabs.setSize(getWidth() - 10, (getHeight() - 100) / 2 + 100);
-        tabs.setLocation(0, logoPanel.getY() + logoPanel.getHeight() + 5);
-        tabs.setBackground(new Color(-341921569, true));
+        tabs.setBackground(new Color(-341921569, false));
         font = new Font("Arial", 1, 14);
         tabs.setFont(font);
+
         listPanel = new JPanel(new GridLayout(1, 1, 20, 20));
         list = new JList();
         listPane.setViewportView(listPanel);
         font = new Font("Arial", 1, 22);
         list.setFont(font);
-        list.setForeground(new Color(-13621857, true));
-        list.setBackground(new Color(0xFFFFEAEA, true));
+        list.setForeground(new Color(-13621857, false));
+        list.setBackground(new Color(0x0F8F3ED, false));
         list.setAutoscrolls(false);
+
         listPane.setViewportView(list);
         listPanel.add(listPane);
+
         tabs.addTab("Headers", listPanel);
+
         contentPanel = new JPanel(new BorderLayout(20, 5));
+
         content = new JTextArea();
         font = new Font("Arial", 1, 18);
         content.setFont(font);
@@ -215,25 +198,29 @@ public class Main extends JFrame {
         content.setAutoscrolls(false);
         content.setBackground(list.getBackground());
         content.setEditable(false);
+
         currentHeaderLabel = new JLabel("");
         currentHeaderLabel.setLabelFor(content);
         currentHeaderLabel.setForeground(Color.BLUE);
-        contentPane.setViewportView(content);
         currentHeaderLabel.setFont(new Font("Arial", 1, 16));
+
+        contentPane.setViewportView(content);
         contentPanel.add(currentHeaderLabel, "North");
         contentPanel.add(contentPane, "Center");
+
         tabs.addTab("Contents", contentPanel);
         tabs.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Content Area"));
+
         downComponents = new JPanel(new GridBagLayout());
-        downComponents.setBackground(topComponents.getBackground());
         downComponents.setSize(getWidth() - 15, topComponents.getHeight());
-        downComponents.setLocation(0, getHeight() - 90);
+
         exitButton = new JButton("Exit");
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ExitButtonAction(e);
             }
         });
+
         connectButton = new JButton("Read More");
         connectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -247,12 +234,14 @@ public class Main extends JFrame {
 
             }
         });
+
         examineButton = new JButton("Examine");
         examineButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ExamineButtonAction(e);
             }
         });
+
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 0.05D;
         c.weighty = 1.0D;
@@ -273,85 +262,121 @@ public class Main extends JFrame {
         c.gridy = 0;
         c.fill = 3;
         downComponents.add(exitButton, c);
-        body.add(topComponents);
-        body.add(logoPanel);
-        body.add(tabs);
-        body.add(downComponents);
+
+        body = new JPanel();
+        body.setLayout(new GridBagLayout());
+        body.setBackground(new Color(0xF0F0FF));
+
+        statusPanel.setBackground(body.getBackground());
+        downComponents.setBackground(body.getBackground());
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        Insets insets = new Insets(0, 5, 0, 5);
+        gbc.insets = insets;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weighty = 0;
+        gbc.weightx = 1;
+        gbc.ipady = 20;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        body.add(topComponents,gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weighty = 0.2;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.anchor = GridBagConstraints.CENTER;
+        //body.add(statusPanel,gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weighty = 2;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        body.add(tabs,gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.weighty = 0;
+        gbc.ipady = 15;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        body.add(downComponents,gbc);
+
         add(body);
     }
 
     public static void main(String[] args) {
         final Main main = new Main();
         main.setVisible(true);
-        main.addComponentListener(new ComponentListener() {
-            public void componentResized(ComponentEvent e) {
-                main.frameResizedAction(e);
-            }
-
-            public void componentMoved(ComponentEvent e) {
-            }
-
-            public void componentShown(ComponentEvent e) {
-            }
-
-            public void componentHidden(ComponentEvent e) {
-            }
-        });
-    }
-
-    private void timerActionHeaders(ActionEvent e) {
-        getHeaders(e);
     }
 
     private void getCurrency(ActionEvent e) {
+        Color green = new Color(0x1DAA1D);
+        Color red = new Color(0xFF0000);
 
-        Website site = new Currency();
+        site = new Currency();
         con = new Connection(site);
         oldUsd = cur[0];
         oldEuro = cur[1];
         oldInterest = cur[2];
         oldGbp = cur[3];
-
-        Color green = new Color(0x1DAA1D);
-        Color red = new Color(0xFF0000);
+        oldGold = cur[4];
 
         try {
+            System.out.println("yenileniyor..");
             cur = con.getCurrency();
         } catch (IOException var4) {
-            JOptionPane.showMessageDialog(this, "Not possible to connect Currency service", "Connection error", 0);
+            JOptionPane.showMessageDialog(null, "Not possible to connect Currency service", "Connection error", 0);
         }
 
-        if (cur[0] > oldUsd) {
+        if (cur[0] >= oldUsd) {
             usdLabel.setForeground(green);
-            usdLabel.setText("$ : " + cur[0]);
         } else {
             usdLabel.setForeground(red);
-            usdLabel.setText("$ : " + cur[0]);
         }
 
-        if (cur[1] > oldEuro) {
+        usdLabel.setText("$ : " + cur[0]);
+
+
+        if (cur[1] >= oldEuro) {
             euroLabel.setForeground(green);
-            euroLabel.setText("€ : " + cur[1]);
-        } else  {
+        } else {
             euroLabel.setForeground(red);
-            euroLabel.setText("€ : " + cur[1]);
         }
 
-        if (cur[2] > oldInterest) {
+        euroLabel.setText("€ : " + cur[1]);
+
+
+        if (cur[2] >= oldInterest) {
             interestLabel.setForeground(green);
-            interestLabel.setText("Int % : " + cur[2]);
         } else  {
             interestLabel.setForeground(red);
-            interestLabel.setText("Int % : " + cur[2]);
         }
 
-        if (cur[3] > oldInterest) {
+        interestLabel.setText("Int % : " + cur[2]);
+
+
+        if (cur[3] >= oldInterest) {
             gbpLabel.setForeground(green);
-            gbpLabel.setText("Sterlin : " + cur[3]);
         } else  {
             gbpLabel.setForeground(red);
-            gbpLabel.setText("Sterlin : " + cur[3]);
         }
+
+        gbpLabel.setText("Pound : " + cur[3]);
+
+
+        if (cur[4] >= oldInterest) {
+            goldLabel.setForeground(green);
+        } else  {
+            goldLabel.setForeground(red);
+        }
+
+        goldLabel.setText("Gold (Gr) : " + cur[4]);
+
     }
 
     private void getHeaders(ActionEvent e) {
@@ -434,7 +459,7 @@ public class Main extends JFrame {
 
         try {
             img = ImageIO.read(new File(dir));
-            icon = new ImageIcon(img.getScaledInstance(400, logoPanel.getHeight(), 4));
+            icon = new ImageIcon(img.getScaledInstance(40, 30, 4));
             connectionButton.setEnabled(true);
         } catch (IOException var5) {
             JOptionPane.showMessageDialog(this, logoName + " not found.", "File error", 0);
@@ -442,18 +467,6 @@ public class Main extends JFrame {
         }
 
         logoLabel.setIcon(icon);
-    }
-
-    private void frameResizedAction(ComponentEvent e) {
-        tabs.setSize(getWidth() - 10, (getHeight() - 100) / 2 + 190);
-        tabs.updateUI();
-        topComponents.setSize(getWidth() - 18, topComponents.getHeight());
-        topComponents.updateUI();
-        logoPanel.setSize(getWidth(), logoPanel.getHeight());
-        logoPanel.updateUI();
-        downComponents.setLocation(0, getHeight() - 90);
-        downComponents.setSize(getWidth() - 15, downComponents.getHeight());
-        downComponents.updateUI();
     }
 
     private void ExamineButtonAction(ActionEvent e) {
@@ -481,11 +494,11 @@ public class Main extends JFrame {
     }
 
     public void logoMouserEntered(MouseEvent e) {
-        setCursor(12);
+        setCursor(Cursor.HAND_CURSOR);
     }
 
     public void logoMouserExited(MouseEvent e) {
-        setCursor(0);
+        setCursor(Cursor.DEFAULT_CURSOR);
     }
 
     public void logoMouserClicked(MouseEvent e) throws IOException, URISyntaxException {

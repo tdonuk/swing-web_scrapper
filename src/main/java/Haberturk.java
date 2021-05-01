@@ -2,7 +2,7 @@ class Haberturk implements Website {
     private String url = "https://www.haberturk.com";
     private String headersUrl = "https://www.haberturk.com/gundem";
     private String contentAdress = "div[class='box-xs-6 box-sm-6 box-md-6 box-lg-6']";
-    private String boxesAdress = "div[class='detail-content'] div[class='box-row clear-box']";
+    private String boxesAdress = "div[class='box-row clear-box']";
     private String newsAdress = "div[class='box-xs-6 box-sm-6 box-md-6 box-lg-6'] a h3";
     private String[] headers;
     private String attribute = "href";
