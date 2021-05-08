@@ -3,8 +3,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main extends JFrame {
     private Image img = null;
@@ -34,17 +38,24 @@ public class Main extends JFrame {
     private JLabel currentHeaderLabel;
     private JLabel statusLabel;
     private JTextArea content;
+    private ArrayList<Website> sources;
+    private ArrayList<Header> headers;
     private String dir = "";
     private String logoName = "";
     private Website site;
     private Connection con;
     private String[] oldData = null;
+    private SourceParser sourceParser;
+    private JMenuBar menuBar;
+    private JMenuItem menuItem;
+    private JMenu menu;
+
     private Timer currencyTimer = new Timer(6000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             getCurrency(e);
         }
     });
-    private Timer headersTimer = new Timer(10000, new ActionListener() {
+    private Timer headersTimer = new Timer(20000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             getHeaders(e);
         }
@@ -59,13 +70,20 @@ public class Main extends JFrame {
     private float oldGold = 0.0F;
     private float[] cur = new float[5];
 
-    public Main() {
+    public Main() throws IOException {
+        sourceParser = new SourceParser();
+        sources = sourceParser.getSources();
+
+        con = new Connection();
+
         initComponents();
+
         currencyTimer.setInitialDelay(0);
         currencyTimer.start();
+
     }
 
-    private void initComponents() {
+    private void initComponents() throws IOException {
         //Defining initial components of the user interface
         //this field includes only graphical adjustments
         setDefaultCloseOperation(3);
@@ -81,6 +99,7 @@ public class Main extends JFrame {
             System.exit(1);
         }
 
+        //Adjusting location of the frame to show up in the center of the screen
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation((d.width - getWidth()) / 2, (d.height - getHeight()) / 2);
 
@@ -101,7 +120,7 @@ public class Main extends JFrame {
         connectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getHeaders(e);
-                headersTimer.setInitialDelay(10000);
+                headersTimer.setInitialDelay(20000);
                 headersTimer.start();
             }
         });
@@ -110,14 +129,8 @@ public class Main extends JFrame {
 
         srcBox = new JComboBox();
         srcBox.removeAll();
-        String[] boxContents = new String[]{"Haberturk", "CNN", "NTV", "Reuters", "Euronews"};
-        String[] var3 = boxContents;
-
-        int boxList = boxContents.length;
-
-        for(int i = 0; i < boxList; ++i) {
-            String s = var3[i];
-            srcBox.addItem(s);
+        for(Website s : sources) {
+            srcBox.addItem(s.getName());
         }
 
         srcBox.addActionListener(new ActionListener() {
@@ -147,7 +160,7 @@ public class Main extends JFrame {
                 try {
                     logoMouserClicked(e);
                 } catch (Exception exc) {
-                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
+                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getMainUrl(), "Connection error", 0);
                 }
 
             }
@@ -227,9 +240,9 @@ public class Main extends JFrame {
                 try {
                     ConnectButtonAction(e);
                 } catch (IOException var3) {
-                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
+          //          JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
                 } catch (URISyntaxException var4) {
-                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
+       //             JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
                 }
 
             }
@@ -309,7 +322,7 @@ public class Main extends JFrame {
         add(body);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         final Main main = new Main();
         main.setVisible(true);
     }
@@ -318,8 +331,6 @@ public class Main extends JFrame {
         Color green = new Color(0x1DAA1D);
         Color red = new Color(0xFF0000);
 
-        site = new Currency();
-        con = new Connection(site);
         oldUsd = cur[0];
         oldEuro = cur[1];
         oldInterest = cur[2];
@@ -381,37 +392,17 @@ public class Main extends JFrame {
 
     private void getHeaders(ActionEvent e) {
         if (connectionButton.isSelected()) {
-            Connection con = new Connection(site);
+            con.getNews(site);
+            headers = site.getHeaders();
 
-            try {
-                con.getNews();
-                oldData = site.getHeaders();
-            } catch (IOException var9) {
-                JOptionPane.showMessageDialog(this, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
-                return;
+            int i = 0;
+            String listData [] = new String[headers.size()];
+            for(Header h : headers) {
+                listData[i] = h.getHeader();
+                i++;
             }
 
-            if (list.getModel().getSize() <= 1) {
-                list.setListData(site.getHeaders());
-            } else {
-                int i = 0;
-                boolean check = true;
-                String[] var5 = oldData;
-                int var6 = var5.length;
-
-                for(int var7 = 0; var7 < var6; ++var7) {
-                    String s = var5[var7];
-                    if (!s.equals(list.getModel().getElementAt(i).toString())) {
-                        check = false;
-                    }
-
-                    ++i;
-                }
-
-                if (!check) {
-                    list.setListData(site.getHeaders());
-                }
-            }
+            list.setListData(listData);
 
             connectionButton.setForeground(new Color(9515047));
             connectionButton.setText("Disconnect");
@@ -432,30 +423,19 @@ public class Main extends JFrame {
     private void srcBoxAction(ActionEvent e) {
         dir = System.getProperty("user.dir") + "\\resources\\";
         int index = srcBox.getSelectedIndex();
-        String logoName = "";
-        switch(index) {
-            case 0:
-                logoName = "ht_logo.resources";
-                site = new Haberturk();
-                break;
-            case 1:
-                logoName = "cnn_logo.resources";
-                site = new Cnn();
-                break;
-            case 2:
-                logoName = "NTV_logo.resources";
-                site = new Ntv();
-                break;
-            case 3:
-                logoName = "reut_logo.resources";
-                site = new Reuters();
-                break;
-            case 4:
-                logoName = "eun_logo.resources";
-                site = new Euronews();
-        }
 
+        logoName = srcBox.getSelectedItem().toString().toLowerCase()+"_logo.resources";
         dir = dir + logoName;
+
+        /*Here, the data in the srcBox is already taken from the parameter 'source'
+         *so, the item selected from srcBox is certainly exist in source.
+         */
+        //Initializing the parameter 'site' by name that user sent from srcBox (JComboBox)
+        for(Website w : sources) {
+            if(w.getName().equals(srcBox.getSelectedItem().toString())) {
+                site = w;
+            }
+        }
 
         try {
             img = ImageIO.read(new File(dir));
@@ -470,18 +450,23 @@ public class Main extends JFrame {
     }
 
     private void ExamineButtonAction(ActionEvent e) {
-        try {
-            Connection con = new Connection(site);
-            con.getContents(list.getSelectedIndex());
-            String c = site.getContent();
-            content.setText(c);
-            content.setCaretPosition(0);
-            currentHeaderLabel.setText(list.getSelectedValue().toString());
-            tabs.setSelectedIndex(1);
-        } catch (IOException var4) {
-            System.out.println("connection error");
+        content.setCaretPosition(0);
+
+        String selectedTitle = list.getSelectedValue().toString();
+        currentHeaderLabel.setText(selectedTitle);
+
+        tabs.setSelectedIndex(1);
+
+        Header selectedHeader = null;
+        for(Header h : headers) {
+            if(selectedTitle.equals(h.getHeader())) {
+                selectedHeader = h;
+            }
         }
 
+        con.getContent(selectedHeader,site);
+
+        content.setText("\nTitle\n\n"+selectedHeader.getContentHeader()+"\n\nDetails\n\n"+selectedHeader.getContentDetails());
     }
 
     private void ExitButtonAction(ActionEvent e) {
@@ -489,19 +474,25 @@ public class Main extends JFrame {
     }
 
     private void ConnectButtonAction(ActionEvent e) throws IOException, URISyntaxException {
-        String s = site.getUrl() + site.getContentUrl()[list.getSelectedIndex()];
-        con.connect(s);
+        Header toBrowse = null;
+      for(Header h : headers) {
+          if(currentHeaderLabel.getText().equals(h.getHeader())) {
+              toBrowse = h;
+          }
+      }
+
+      con.browse(toBrowse);
     }
 
     public void logoMouserEntered(MouseEvent e) {
-        setCursor(Cursor.HAND_CURSOR);
+        if(!(null == site)) setCursor(Cursor.HAND_CURSOR);
     }
 
     public void logoMouserExited(MouseEvent e) {
-        setCursor(Cursor.DEFAULT_CURSOR);
+        if(!(null == site)) setCursor(Cursor.DEFAULT_CURSOR);
     }
 
     public void logoMouserClicked(MouseEvent e) throws IOException, URISyntaxException {
-        con.connect(site.getUrl());
+        if(!(null == site)) Desktop.getDesktop().browse(new URL(site.getMainUrl()).toURI());
     }
 }
