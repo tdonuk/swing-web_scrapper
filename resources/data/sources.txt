@@ -16,6 +16,6 @@ headers-url: /turkiye
 main-list-address: div[class='ntv-content-inner'] div[class='category-multiple-item ']
 header-address: p[class='card-text'] a
 header-link-address: p[class='card-text'] a
-content-header-address: div[class='category-detail-left'] h1[class='category-detail-title']
-content-details-address: div[class='category-detail-left'] div[class='card-text-wrapper']
+content-header-address: div[class='category-detail-left'] h1[class='category-detail-title'],h2[class='category-detail-sub-title']
+content-details-address: div[class='category-detail-left'] div[class='card-text-wrapper'],div[class='category-detail-content-inner'] p
 </source>
