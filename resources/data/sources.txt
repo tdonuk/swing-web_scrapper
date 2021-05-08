@@ -1,0 +1,21 @@
+
+<source>
+name: Haberturk
+main-url: https://www.haberturk.com
+headers-url: /gundem
+main-list-address: div[class='detail-container'] div[class='box-row clear-box'] div[class='box-xs-6 box-sm-6 box-md-6 box-lg-6']
+header-address: div[class='info'] a h3
+header-link-address: div[class='info'] a[data-newsid]
+content-header-address: h1[class='title']
+content-details-address: article[class='content type1'] p
+</source>
+<source>
+name: NTV
+main-url: https://www.ntv.com.tr
+headers-url: /turkiye
+main-list-address: div[class='ntv-content-inner'] div[class='category-multiple-item ']
+header-address: p[class='card-text'] a
+header-link-address: p[class='card-text'] a
+content-header-address: div[class='category-detail-left'] h1[class='category-detail-title']
+content-details-address: div[class='category-detail-left'] div[class='card-text-wrapper']
+</source>
