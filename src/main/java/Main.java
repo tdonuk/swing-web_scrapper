@@ -450,8 +450,6 @@ public class Main extends JFrame {
     }
 
     private void ExamineButtonAction(ActionEvent e) {
-        content.setCaretPosition(0);
-
         String selectedTitle = list.getSelectedValue().toString();
         currentHeaderLabel.setText(selectedTitle);
 
@@ -467,6 +465,8 @@ public class Main extends JFrame {
         con.getContent(selectedHeader,site);
 
         content.setText("\nTitle\n\n"+selectedHeader.getContentHeader()+"\n\nDetails\n\n"+selectedHeader.getContentDetails());
+
+        content.setCaretPosition(0);
     }
 
     private void ExitButtonAction(ActionEvent e) {
