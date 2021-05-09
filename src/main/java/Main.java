@@ -44,11 +44,10 @@ public class Main extends JFrame {
     private String logoName = "";
     private Website site;
     private Connection con;
-    private String[] oldData = null;
     private SourceParser sourceParser;
     private JMenuBar menuBar;
-    private JMenuItem menuItem;
-    private JMenu menu;
+    private JMenu menu,themeMenu;
+    private JMenuItem addSourceItem,lightModeItem,darkModeItem;
 
     private Timer currencyTimer = new Timer(6000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -81,6 +80,7 @@ public class Main extends JFrame {
         currencyTimer.setInitialDelay(0);
         currencyTimer.start();
 
+        applyDarkMode();
     }
 
     private void initComponents() throws IOException {
@@ -89,7 +89,7 @@ public class Main extends JFrame {
         setDefaultCloseOperation(3);
         setSize(1500, 900); //Default size
         setMinimumSize(new Dimension(400, 600));
-        setTitle("News Scraper");
+        setTitle("Newscraper");
         dir = System.getProperty("user.dir") + "\\resources\\";
 
         try {
@@ -99,13 +99,45 @@ public class Main extends JFrame {
             System.exit(1);
         }
 
+        menu = new JMenu("Menu");
+        themeMenu = new JMenu("Theme");
+
+        addSourceItem = new JMenuItem("Source Management");
+
+        lightModeItem = new JMenuItem("Light");
+        lightModeItem.addActionListener(e -> {
+            applyLightMode();
+        });
+
+        darkModeItem = new JMenuItem("Dark");
+        darkModeItem.addActionListener(e->{
+            applyDarkMode();
+        });
+
+        themeMenu.add(lightModeItem);
+        themeMenu.add(darkModeItem);
+
+        menuBar = new JMenuBar();
+
+        Font menuFont = new Font(menuBar.getFont().getName(), Font.BOLD, 14);
+
+        addSourceItem.setFont(menuFont);
+        lightModeItem.setFont(menuFont);
+        darkModeItem.setFont(menuFont);
+        themeMenu.setFont(menuFont);
+        menu.setFont(menuFont);
+
+        menu.add(addSourceItem);
+        menu.add(themeMenu);
+        menuBar.add(menu);
+
+        this.setJMenuBar(menuBar);
+
         //Adjusting location of the frame to show up in the center of the screen
         Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation((d.width - getWidth()) / 2, (d.height - getHeight()) / 2);
 
         topComponents = new JPanel(new GridLayout(1, 5, 10, 10));
-        topComponents.setBackground(new Color(0xFFFDF6F6, true));
-        topComponents.setBorder(BorderFactory.createLineBorder(Color.black));
 
         currency = new JLabel("Currency");
         currency.setForeground(Color.BLUE);
@@ -120,7 +152,7 @@ public class Main extends JFrame {
         connectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getHeaders(e);
-                headersTimer.setInitialDelay(20000);
+                headersTimer.setInitialDelay(10000);
                 headersTimer.start();
             }
         });
@@ -129,9 +161,13 @@ public class Main extends JFrame {
 
         srcBox = new JComboBox();
         srcBox.removeAll();
+        srcBox.setFocusable(false);
         for(Website s : sources) {
             srcBox.addItem(s.getName());
         }
+        Font srcFont = new Font(srcBox.getFont().getName(),Font.BOLD,17);
+        srcBox.setFont(srcFont);
+        connectionButton.setFont(srcFont);
 
         srcBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -182,7 +218,6 @@ public class Main extends JFrame {
 
         tabs = new JTabbedPane();
         tabs.removeAll();
-        tabs.setBackground(new Color(-341921569, false));
         font = new Font("Arial", 1, 14);
         tabs.setFont(font);
 
@@ -191,8 +226,6 @@ public class Main extends JFrame {
         listPane.setViewportView(listPanel);
         font = new Font("Arial", 1, 22);
         list.setFont(font);
-        list.setForeground(new Color(-13621857, false));
-        list.setBackground(new Color(0x0F8F3ED, false));
         list.setAutoscrolls(false);
 
         listPane.setViewportView(list);
@@ -209,12 +242,10 @@ public class Main extends JFrame {
         content.setWrapStyleWord(true);
         content.setLineWrap(true);
         content.setAutoscrolls(false);
-        content.setBackground(list.getBackground());
         content.setEditable(false);
 
         currentHeaderLabel = new JLabel("");
         currentHeaderLabel.setLabelFor(content);
-        currentHeaderLabel.setForeground(Color.BLUE);
         currentHeaderLabel.setFont(new Font("Arial", 1, 16));
 
         contentPane.setViewportView(content);
@@ -222,7 +253,7 @@ public class Main extends JFrame {
         contentPanel.add(contentPane, "Center");
 
         tabs.addTab("Contents", contentPanel);
-        tabs.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.BLACK), "Content Area"));
+        tabs.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         downComponents = new JPanel(new GridBagLayout());
         downComponents.setSize(getWidth() - 15, topComponents.getHeight());
@@ -262,11 +293,11 @@ public class Main extends JFrame {
         c.anchor = 17;
         c.gridx = 0;
         c.gridy = 0;
-        c.insets = new Insets(5, 5, 15, 0);
+        c.insets = new Insets(5, 5, 5, 0);
         downComponents.add(examineButton, c);
         c.gridx = 1;
         c.gridy = 0;
-        c.insets = new Insets(5, 5, 15, 5);
+        c.insets = new Insets(5, 5, 5, 5);
         c.anchor = 17;
         downComponents.add(connectButton, c);
         c.anchor = 13;
@@ -278,7 +309,6 @@ public class Main extends JFrame {
 
         body = new JPanel();
         body.setLayout(new GridBagLayout());
-        body.setBackground(new Color(0xF0F0FF));
 
         statusPanel.setBackground(body.getBackground());
         downComponents.setBackground(body.getBackground());
@@ -314,7 +344,7 @@ public class Main extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weighty = 0;
-        gbc.ipady = 15;
+        gbc.ipady = 12;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         body.add(downComponents,gbc);
@@ -338,7 +368,6 @@ public class Main extends JFrame {
         oldGold = cur[4];
 
         try {
-            System.out.println("yenileniyor..");
             cur = con.getCurrency();
         } catch (IOException var4) {
             JOptionPane.showMessageDialog(null, "Not possible to connect Currency service", "Connection error", 0);
@@ -371,7 +400,7 @@ public class Main extends JFrame {
         interestLabel.setText("Int % : " + cur[2]);
 
 
-        if (cur[3] >= oldInterest) {
+        if (cur[3] >= oldGbp) {
             gbpLabel.setForeground(green);
         } else  {
             gbpLabel.setForeground(red);
@@ -394,6 +423,11 @@ public class Main extends JFrame {
         if (connectionButton.isSelected()) {
             con.getNews(site);
             headers = site.getHeaders();
+
+            if(null == headers) {
+                JOptionPane.showMessageDialog(this,"Connection error: can't connect to chosen source", "Connection error",JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             int i = 0;
             String listData [] = new String[headers.size()];
@@ -475,13 +509,89 @@ public class Main extends JFrame {
 
     private void ConnectButtonAction(ActionEvent e) throws IOException, URISyntaxException {
         Header toBrowse = null;
-      for(Header h : headers) {
-          if(currentHeaderLabel.getText().equals(h.getHeader())) {
-              toBrowse = h;
-          }
-      }
+        if(tabs.getSelectedIndex() == 0) {
+            for(Header h : headers) {
+                if(list.getSelectedValue().toString().equals(h.getHeader())) {
+                    toBrowse = h;
+                }
+            }
+        } else {
+            for(Header h : headers) {
+                if(currentHeaderLabel.getText().equals(h.getHeader())) {
+                    toBrowse = h;
+                }
+            }
+        }
 
       con.browse(toBrowse);
+    }
+
+    public void applyLightMode() {
+        topComponents.setBackground(new Color(0xF1EBDF));
+        topComponents.setBorder(BorderFactory.createLineBorder(Color.black));
+
+        connectionButton.setBackground(new Color(0xCCDAF6));
+
+        srcBox.setBackground(connectionButton.getBackground());
+        srcBox.setForeground(Color.black);
+
+        tabs.setBackground(new Color(0xFFE6E6));
+        tabs.setForeground(Color.blue);
+        tabs.setBorder(BorderFactory.createLineBorder(Color.black));
+
+        list.setForeground(new Color(0x2952BA));
+        list.setBackground(new Color(0xFFFFFF));
+
+        content.setBackground(list.getBackground());
+        content.setForeground(new Color(0x090909));
+
+        currentHeaderLabel.setForeground(Color.BLUE);
+        contentPanel.setBackground(content.getBackground());
+
+        body.setBackground(new Color(0x4A67B1));
+
+        downComponents.setBackground(topComponents.getBackground());
+
+        examineButton.setBackground(new Color(0xC1C1C1));
+        examineButton.setForeground(new Color(0x1C1C1C));
+        connectButton.setBackground(examineButton.getBackground());
+        connectButton.setForeground(examineButton.getForeground());
+        exitButton.setBackground(examineButton.getBackground());
+        exitButton.setForeground(examineButton.getForeground());
+    }
+
+    public void applyDarkMode() {
+        topComponents.setBackground(new Color(0xFF1D2544, true));
+        topComponents.setBorder(BorderFactory.createLineBorder(Color.darkGray));
+
+        connectionButton.setBackground(new Color(0x343434));
+
+        srcBox.setBackground(connectionButton.getBackground());
+        srcBox.setForeground(new Color(0xC68312));
+
+        tabs.setBackground(new Color(0x19452A, false));
+        tabs.setForeground(Color.blue);
+        tabs.setBorder(BorderFactory.createLineBorder(Color.darkGray));
+
+        list.setForeground(new Color(0xC68312));
+        list.setBackground(new Color(0x232323, false));
+
+        content.setBackground(list.getBackground());
+        content.setForeground(new Color(0xA5A5A5));
+
+        currentHeaderLabel.setForeground(Color.BLUE);
+        contentPanel.setBackground(content.getBackground());
+
+        body.setBackground(new Color(0x000000));
+
+        downComponents.setBackground(topComponents.getBackground());
+
+        examineButton.setBackground(new Color(0x2F2F2F));
+        examineButton.setForeground(new Color(0xE0E0E0));
+        connectButton.setBackground(examineButton.getBackground());
+        connectButton.setForeground(examineButton.getForeground());
+        exitButton.setBackground(examineButton.getBackground());
+        exitButton.setForeground(examineButton.getForeground());
     }
 
     public void logoMouserEntered(MouseEvent e) {

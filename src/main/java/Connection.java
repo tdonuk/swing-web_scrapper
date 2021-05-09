@@ -56,9 +56,10 @@ public class Connection {
             } else{
                 header.setLink(site.getMainUrl()+link);
             }
-
+            if(header.getHeader().equals("") || link.equals("")) continue;
             news.add(header);
         }
+
         site.setHeaders(news);
     }
 
@@ -83,11 +84,10 @@ public class Connection {
 
     public float[] getCurrency() throws IOException {
         Currency currencyService = new Currency();
-        Currency curService = new Currency();
         currencyDoc = Jsoup.connect(currencyService.getHeadersUrl()).get();
-        Elements mainBox = currencyDoc.select(curService.getBoxesAdress());
+        Elements mainBox = currencyDoc.select(currencyService.getBoxesAdress());
         if (mainBox.size() > 0) {
-            mainList = mainBox.select(curService.getNewsAdress());
+            mainList = mainBox.select(currencyService.getNewsAdress());
             currencies = new String[5];
             cur = new float[currencies.length];
 

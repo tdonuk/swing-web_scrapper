@@ -19,3 +19,13 @@ header-link-address: p[class='card-text'] a
 content-header-address: div[class='category-detail-left'] h1[class='category-detail-title'],h2[class='category-detail-sub-title']
 content-details-address: div[class='category-detail-left'] div[class='card-text-wrapper'],div[class='category-detail-content-inner'] p
 </source>
+<source>
+name: CNN
+main-url: https://www.cnnturk.com
+headers-url: /turkiye
+main-list-address: div[class='container'] div[class='row'] div[class^='col-']
+header-address: div[class='caption-title']
+header-link-address: a[class^='thumbnail']
+content-header-address: h2[class^='detail-description']
+content-details-address: div[data-io-article-url]>p
+</source>
