@@ -1,4 +1,3 @@
-
 <source>
 name: Haberturk
 main-url: https://www.haberturk.com
@@ -8,6 +7,7 @@ header-address: div[class='info'] a h3
 header-link-address: div[class='info'] a[data-newsid]
 content-header-address: h1[class='title']
 content-details-address: article[class='content type1'] p
+icon: haberturk_logo.resources
 </source>
 <source>
 name: NTV
@@ -17,7 +17,8 @@ main-list-address: div[class='ntv-content-inner'] div[class='category-multiple-i
 header-address: p[class='card-text'] a
 header-link-address: p[class='card-text'] a
 content-header-address: div[class='category-detail-left'] h1[class='category-detail-title'],h2[class='category-detail-sub-title']
-content-details-address: div[class='category-detail-left'] div[class='card-text-wrapper'],div[class='category-detail-content-inner'] p
+content-details-address: div[class='category-detail-content-inner']>p,h2[class='category-detail-sub-title']
+icon: ntv_logo.resources
 </source>
 <source>
 name: CNN
@@ -28,4 +29,5 @@ header-address: div[class='caption-title']
 header-link-address: a[class^='thumbnail']
 content-header-address: h2[class^='detail-description']
 content-details-address: div[data-io-article-url]>p
+icon: cnn_logo.resources
 </source>

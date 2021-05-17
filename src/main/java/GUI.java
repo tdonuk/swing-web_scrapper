@@ -3,14 +3,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Period;
 import java.util.ArrayList;
-import java.util.Arrays;
 
-public class Main extends JFrame {
+public class GUI extends JFrame {
     private Image img = null;
     private Icon icon = null;
     private JPanel body;
@@ -38,7 +37,7 @@ public class Main extends JFrame {
     private JLabel currentHeaderLabel;
     private JLabel statusLabel;
     private JTextArea content;
-    private ArrayList<Website> sources;
+    private ArrayList<Website> sources,preferredSources;
     private ArrayList<Header> headers;
     private String dir = "";
     private String logoName = "";
@@ -47,7 +46,9 @@ public class Main extends JFrame {
     private SourceParser sourceParser;
     private JMenuBar menuBar;
     private JMenu menu,themeMenu;
-    private JMenuItem addSourceItem,lightModeItem,darkModeItem;
+    private JMenuItem manageSourcesItem,lightModeItem,darkModeItem;
+    private SourceManageService sms;
+    public Object lock = new Object(); //Will be used to stop thread
 
     private Timer currencyTimer = new Timer(6000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -69,27 +70,85 @@ public class Main extends JFrame {
     private float oldGold = 0.0F;
     private float[] cur = new float[5];
 
-    public Main() throws IOException {
+    private JButton temp = new JButton();
+
+    public GUI() throws IOException {
         sourceParser = new SourceParser();
-        sources = sourceParser.getSources();
 
         con = new Connection();
 
+        if(sourceParser.isFirstTime()) {
+            sourceSetup();
+        } else {
+            preferredSources = sourceParser.getPreferredSources();
+            this.setVisible(true);
+        }
+
         initComponents();
-
-        currencyTimer.setInitialDelay(0);
-        currencyTimer.start();
-
-        applyDarkMode();
     }
+
+    private void srcBoxSetup() {
+        if(null != preferredSources && !preferredSources.isEmpty()) {
+            srcBox.removeAllItems();
+            preferredSources.forEach(w -> srcBox.addItem(w.getName()));
+            srcBox.setSelectedIndex(0);
+
+            if(sourceParser.isFirstTime()) {
+                String firstTimeText = "Your preferred sources is set now. You are ready to use News Scrapper." +
+                        " Click the menu box\non the top left corner to open drop down source list and then start a connection";
+                JOptionPane.showMessageDialog(this,firstTimeText,"You Are Ready",JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    }
+
+    private void sourceSetup() {
+        if(!sourceParser.isFirstTime()) { //then there must be no currently established connection
+            connectionButtonState(false);
+        }
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                GUI.this.setEnabled(false);
+
+                showSourcesFrame();
+
+                synchronized (lock) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        System.out.println("Interrupted");
+                    }
+
+                }
+
+                sourceParser = new SourceParser();
+
+                if(null != preferredSources){
+                    preferredSources.clear();
+                }
+                preferredSources = sourceParser.getPreferredSources();
+
+                if(preferredSources.isEmpty()) return;
+
+                srcBoxSetup();
+
+                GUI.this.setEnabled(true);
+
+                GUI.this.toFront();
+                GUI.this.setVisible(true);
+            }
+        });
+        t.start();
+    }
+
 
     private void initComponents() throws IOException {
         //Defining initial components of the user interface
         //this field includes only graphical adjustments
-        setDefaultCloseOperation(3);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(1500, 900); //Default size
         setMinimumSize(new Dimension(400, 600));
-        setTitle("Newscraper");
+        setTitle("News Scraper");
         dir = System.getProperty("user.dir") + "\\resources\\";
 
         try {
@@ -102,7 +161,10 @@ public class Main extends JFrame {
         menu = new JMenu("Menu");
         themeMenu = new JMenu("Theme");
 
-        addSourceItem = new JMenuItem("Source Management");
+        manageSourcesItem = new JMenuItem("Source Management");
+        manageSourcesItem.addActionListener(e -> {
+            sourceSetup();
+        });
 
         lightModeItem = new JMenuItem("Light");
         lightModeItem.addActionListener(e -> {
@@ -121,14 +183,16 @@ public class Main extends JFrame {
 
         Font menuFont = new Font(menuBar.getFont().getName(), Font.BOLD, 14);
 
-        addSourceItem.setFont(menuFont);
+        manageSourcesItem.setFont(menuFont);
         lightModeItem.setFont(menuFont);
         darkModeItem.setFont(menuFont);
         themeMenu.setFont(menuFont);
         menu.setFont(menuFont);
 
-        menu.add(addSourceItem);
+        menu.add(manageSourcesItem);
         menu.add(themeMenu);
+        menuBar.setBackground(new Color(0xBFBFD2));
+        menuBar.setBorderPainted(true);
         menuBar.add(menu);
 
         this.setJMenuBar(menuBar);
@@ -147,33 +211,33 @@ public class Main extends JFrame {
         gbpLabel = new JLabel();
         goldLabel = new JLabel();
 
-        connectionButton = new JToggleButton("Connection");
-        connectionButton.setEnabled(false);
-        connectionButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                getHeaders(e);
-                headersTimer.setInitialDelay(10000);
-                headersTimer.start();
-            }
-        });
-        connectionButton.setForeground(new Color(0x247F22));
-        connectionButton.setText("Connect");
-
         srcBox = new JComboBox();
+        Font srcFont = new Font(srcBox.getFont().getName(),Font.BOLD,17);
         srcBox.removeAll();
         srcBox.setFocusable(false);
-        for(Website s : sources) {
-            srcBox.addItem(s.getName());
-        }
-        Font srcFont = new Font(srcBox.getFont().getName(),Font.BOLD,17);
+        srcBoxSetup();
+        srcBox.setSelectedIndex(-1);
         srcBox.setFont(srcFont);
-        connectionButton.setFont(srcFont);
-
+        srcBox.setToolTipText("Click to open the dropdown source list");
         srcBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 srcBoxAction(e);
             }
         });
+
+        connectionButton = new JToggleButton("Connection");
+        connectionButton.setToolTipText("Click to establish a connection to selected source. The headers list will be refreshed every 20 seconds");
+        connectionButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getHeaders(e);
+                if(srcBox.getSelectedIndex() != -1) {
+                    headersTimer.setInitialDelay(10000);
+                    headersTimer.start();
+                }
+            }
+        });
+        connectionButton.setFont(srcFont);
+        connectionButton.setText("Connect");
 
         statusPanel = new JPanel(new FlowLayout());
         logoLabel = new JLabel();
@@ -315,7 +379,7 @@ public class Main extends JFrame {
 
         GridBagConstraints gbc = new GridBagConstraints();
 
-        Insets insets = new Insets(0, 5, 0, 5);
+        Insets insets = new Insets(0, 0, 5, 0);
         gbc.insets = insets;
 
         gbc.gridx = 0;
@@ -326,6 +390,8 @@ public class Main extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.CENTER;
         body.add(topComponents,gbc);
+
+        gbc.insets = new Insets(0,0,0,0);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -344,17 +410,45 @@ public class Main extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weighty = 0;
-        gbc.ipady = 12;
+        gbc.ipady = 8;
         gbc.anchor = GridBagConstraints.CENTER;
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 0, 0, 0);
         body.add(downComponents,gbc);
 
         add(body);
+
+        currencyTimer.setInitialDelay(0);
+        currencyTimer.start();
+
+        applyDarkMode();
     }
 
     public static void main(String[] args) throws IOException {
-        final Main main = new Main();
-        main.setVisible(true);
+
+        try {
+            UIManager.LookAndFeelInfo[] lafList = UIManager.getInstalledLookAndFeels();
+            int length = lafList.length;
+
+            for(int i = 0; i < length; ++i) {
+                UIManager.LookAndFeelInfo info = lafList[i];
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+
+        }
+
+        final GUI main = new GUI();
+
+
+        SourceParser sp = new SourceParser();
+
+        if(!sp.isFirstTime()) {
+            main.setVisible(true);
+        }
     }
 
     private void getCurrency(ActionEvent e) {
@@ -420,12 +514,18 @@ public class Main extends JFrame {
     }
 
     private void getHeaders(ActionEvent e) {
+        if(null == site) { //Then user did not select any source
+            JOptionPane.showMessageDialog(this,"Please select a source from the dropdown list", "Source Not Selected",JOptionPane.ERROR_MESSAGE);
+            connectionButton.setSelected(false);
+            return;
+        }
         if (connectionButton.isSelected()) {
+            connectionButtonState(true);
             con.getNews(site);
             headers = site.getHeaders();
 
             if(null == headers) {
-                JOptionPane.showMessageDialog(this,"Connection error: can't connect to chosen source", "Connection error",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,"Connection error: can't connect to "+srcBox.getSelectedItem().toString(), "Connection error",JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -438,10 +538,20 @@ public class Main extends JFrame {
 
             list.setListData(listData);
 
-            connectionButton.setForeground(new Color(9515047));
+        }else {
+            connectionButtonState(false);
+        }
+
+    }
+
+    private void connectionButtonState(boolean isSelected) {
+        connectionButton.setSelected(isSelected); //this will be used by sourceFrame. when user wants to choose new sources, current established connections must be finished
+        if(isSelected) {
+            connectionButton.setForeground(new Color(0xDE1C08));
             connectionButton.setText("Disconnect");
             srcBox.setEnabled(false);
-        } else {
+        }
+        if(!isSelected) {
             String[] nullData = new String[]{""};
             list.setListData(nullData);
             content.setText("");
@@ -451,10 +561,11 @@ public class Main extends JFrame {
             srcBox.setEnabled(true);
             tabs.setSelectedIndex(0);
         }
-
     }
 
     private void srcBoxAction(ActionEvent e) {
+        if(null == srcBox.getSelectedItem()) return;
+
         dir = System.getProperty("user.dir") + "\\resources\\";
         int index = srcBox.getSelectedIndex();
 
@@ -465,22 +576,19 @@ public class Main extends JFrame {
          *so, the item selected from srcBox is certainly exist in source.
          */
         //Initializing the parameter 'site' by name that user sent from srcBox (JComboBox)
-        for(Website w : sources) {
+        for(Website w : preferredSources) {
             if(w.getName().equals(srcBox.getSelectedItem().toString())) {
                 site = w;
             }
         }
 
-        try {
-            img = ImageIO.read(new File(dir));
-            icon = new ImageIcon(img.getScaledInstance(40, 30, 4));
-            connectionButton.setEnabled(true);
-        } catch (IOException var5) {
-            JOptionPane.showMessageDialog(this, logoName + " not found.", "File error", 0);
-            System.exit(1);
+        if(srcBox.getSelectedIndex() != -1) {
+            logoLabel.setToolTipText("Connect to: "+site.getMainUrl());
         }
 
-        logoLabel.setIcon(icon);
+        //icon = new ImageIcon(img.getScaledInstance(40, 30, 4));
+
+        logoLabel.setIcon(new ImageIcon(site.getImageFile().getScaledInstance(40,30,5)));
     }
 
     private void ExamineButtonAction(ActionEvent e) {
@@ -531,6 +639,7 @@ public class Main extends JFrame {
         topComponents.setBorder(BorderFactory.createLineBorder(Color.black));
 
         connectionButton.setBackground(new Color(0xCCDAF6));
+        connectionButton.setForeground(new Color(0x185C0A));
 
         srcBox.setBackground(connectionButton.getBackground());
         srcBox.setForeground(Color.black);
@@ -561,10 +670,11 @@ public class Main extends JFrame {
     }
 
     public void applyDarkMode() {
-        topComponents.setBackground(new Color(0xFF1D2544, true));
+        topComponents.setBackground(new Color(0x062242, false));
         topComponents.setBorder(BorderFactory.createLineBorder(Color.darkGray));
 
-        connectionButton.setBackground(new Color(0x343434));
+        connectionButton.setBackground(new Color(0x202045));
+        connectionButton.setForeground(new Color(0x4CD249));
 
         srcBox.setBackground(connectionButton.getBackground());
         srcBox.setForeground(new Color(0xC68312));
@@ -592,6 +702,11 @@ public class Main extends JFrame {
         connectButton.setForeground(examineButton.getForeground());
         exitButton.setBackground(examineButton.getBackground());
         exitButton.setForeground(examineButton.getForeground());
+    }
+
+    public void showSourcesFrame() {
+        sms = new SourceManageService(this);
+        sms.toFront();
     }
 
     public void logoMouserEntered(MouseEvent e) {

@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.util.ArrayList;
 
 //Website DTO
@@ -5,6 +6,8 @@ import java.util.ArrayList;
 public class Website {
     private String name;
     private String mainUrl;
+    private Image img;
+    private String ImageFileName;
     private String headersUrl;
     private String mainListAddress;
     private String headerAddress;
@@ -12,6 +15,22 @@ public class Website {
     private String contentHeaderAddress;
     private String contentDetailsAddress;
     private ArrayList<Header> headers;
+
+    public String getImageFileName() {
+        return ImageFileName;
+    }
+
+    public void setImageFileName(String imageFileName) {
+        ImageFileName = imageFileName;
+    }
+
+    public Image getImageFile() {
+        return img;
+    }
+
+    public void setImageFile(Image image) {
+        this.img = image;
+    }
 
     public String getContentHeaderAddress() {
         return contentHeaderAddress;
