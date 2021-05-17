@@ -30,6 +30,7 @@ public class SourceManageService extends JFrame {
         this.setResizable(false);
         this.getContentPane().setBackground(new Color(0xEFDBDB));
         this.setLocationRelativeTo(parent);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(10,0));
