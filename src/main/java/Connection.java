@@ -15,7 +15,6 @@ public class Connection {
     private Elements mainList;
     private String[] currencies;
     private Header header;
-    private JOptionPane errorPane;
     private float[] cur;
 
     public void getNews(Website site) {
@@ -25,14 +24,14 @@ public class Connection {
             String url = site.getMainUrl() + site.getHeadersUrl();
             newsDoc =Jsoup.connect(url).get();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,"Seçtiğiniz sitenin ana sayfa URL değerini kontrol ediniz.", "Bağlantı Hatası", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,"Corrupted Main Page URL", "Connection Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         mainList = newsDoc.select(site.getMainListAddress());
 
         if(mainList.size() == 0) {
-            JOptionPane.showMessageDialog(null,"Ana liste adresinin doğru olduğunu kontrol ediniz", "Ayıklama Hatası", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,"Main list address is incorrect", "Parse error", JOptionPane.ERROR_MESSAGE);
             return;
         }
         String link = "";
@@ -58,15 +57,14 @@ public class Connection {
 
     public void getContent(Header header , Website site) {
         if(newsDoc.equals(null) || header.getLink().equals(null)) {
-            errorPane.setMessage("URL not found");
-            errorPane.setVisible(true);
+            JOptionPane.showMessageDialog(null,"URL not found","Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
             contentsDoc = Jsoup.connect(header.getLink()).get();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null,"Haber linki bozuk olabilir. Link adresini kontrol ediniz", "Adres Hatası",JOptionPane.ERROR_MESSAGE );
+            JOptionPane.showMessageDialog(null,"Corrupted link or no internet connection. \nThe link: "+header.getLink(),"Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
 
