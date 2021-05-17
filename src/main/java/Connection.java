@@ -3,7 +3,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,27 +18,21 @@ public class Connection {
     private JOptionPane errorPane;
     private float[] cur;
 
-    public Connection() {
-        errorPane = new JOptionPane();
-        errorPane.createDialog(null,"Connection error");
-    }
-
     public void getNews(Website site) {
         ArrayList<Header> news = new ArrayList<>();
 
         try {
-            newsDoc =Jsoup.connect(site.getMainUrl()+site.getHeadersUrl()).get();
+            String url = site.getMainUrl() + site.getHeadersUrl();
+            newsDoc =Jsoup.connect(url).get();
         } catch (IOException e) {
-            errorPane.setMessage("Not possible to connect: "+site.getMainUrl());
-            errorPane.setMessageType(JOptionPane.ERROR_MESSAGE);
-            errorPane.setVisible(true);
+            JOptionPane.showMessageDialog(null,"Seçtiğiniz sitenin ana sayfa URL değerini kontrol ediniz.", "Bağlantı Hatası", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         mainList = newsDoc.select(site.getMainListAddress());
 
         if(mainList.size() == 0) {
-            JOptionPane.showMessageDialog(null,"Main list address is incorrect", "Parse error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,"Ana liste adresinin doğru olduğunu kontrol ediniz", "Ayıklama Hatası", JOptionPane.ERROR_MESSAGE);
             return;
         }
         String link = "";
@@ -73,8 +66,7 @@ public class Connection {
         try {
             contentsDoc = Jsoup.connect(header.getLink()).get();
         } catch (IOException e) {
-            errorPane.setMessage("Corrupted link or no internet connection. \nThe link: "+header.getLink());
-            errorPane.setVisible(true);
+            JOptionPane.showMessageDialog(null,"Haber linki bozuk olabilir. Link adresini kontrol ediniz", "Adres Hatası",JOptionPane.ERROR_MESSAGE );
             return;
         }
 
@@ -92,23 +84,23 @@ public class Connection {
             cur = new float[currencies.length];
 
             currencies[0] = mainList.get(1).ownText();
-            float parsed = Float.parseFloat(String.format(currencies[0].replaceAll(",", "."), "%.4f"));
+            float parsed = Float.parseFloat(String.format(currencies[0].replaceAll(",", "."), "%.5f"));
             cur[0] = parsed;
 
             currencies[1] = mainList.get(2).ownText();
-            parsed = Float.parseFloat(String.format(currencies[1].replaceAll(",", "."), "%.4f"));
+            parsed = Float.parseFloat(String.format(currencies[1].replaceAll(",", "."), "%.5f"));
             cur[1] = parsed;
 
             currencies[2] = mainList.get(7).ownText();
-            parsed = Float.parseFloat(String.format(currencies[2].replaceAll(",", "."), "%.4f"));
+            parsed = Float.parseFloat(String.format(currencies[2].replaceAll(",", "."), "%.5f"));
             cur[2] = parsed;
 
             currencies[3] = mainList.get(3).ownText();
-            parsed = Float.parseFloat(String.format(currencies[3].replaceAll(",", "."), "%.4f"));
+            parsed = Float.parseFloat(String.format(currencies[3].replaceAll(",", "."), "%.5f"));
             cur[3] = parsed;
 
             currencies[4] = mainList.get(0).ownText();
-            parsed = Float.parseFloat(String.format(currencies[4].replaceAll(",", "."), "%.4f"));
+            parsed = Float.parseFloat(String.format(currencies[4].replaceAll(",", "."), "%.5f"));
             cur[4] = parsed;
         }
 
