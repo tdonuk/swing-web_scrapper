@@ -135,7 +135,7 @@ public class SourceParser {
                 sb.append("content-header-address: "+w.getContentHeaderAddress()+"\n");
                 sb.append("content-details-address: "+w.getContentDetailsAddress()+"\n");
                 sb.append("icon: "+w.getImageFileName()+"\n");
-                sb.append("</source>\n\n");
+                sb.append("</source>\n");
             }
             fw.write(sb.toString());
         } catch (IOException e) {
