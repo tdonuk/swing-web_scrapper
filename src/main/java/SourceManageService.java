@@ -100,6 +100,8 @@ public class SourceManageService extends JFrame {
             return;
         }
         parent.toFront();
+        parent.setEnabled(true);
+
         if(sourceParser.isFirstTime()) {
             if(sourceParser.isFirstTime()) {
                 String firstTimeText = "Your preferred sources is set now. You are ready to use LastNews." +

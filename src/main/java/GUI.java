@@ -456,9 +456,7 @@ public class GUI extends JFrame {
 
         SourceParser sp = new SourceParser();
 
-        if(!sp.isFirstTime()) {
-            main.setVisible(true);
-        }
+        main.setVisible(true);
     }
 
     private void getCurrency(ActionEvent e) {
@@ -580,11 +578,8 @@ public class GUI extends JFrame {
         dir = System.getProperty("user.dir") + "\\resources\\";
         int index = srcBox.getSelectedIndex();
 
-        logoName = srcBox.getSelectedItem().toString().toLowerCase()+"_logo.resources";
-        dir = dir + logoName;
-
-        /*Here, the data in the srcBox is already taken from the parameter 'source'
-         *so, the item selected from srcBox is certainly exist in source.
+        /*Here, the data in the srcBox is already taken from the parameter 'preferredSources'
+         *so, the item selected from srcBox is obviously exists in 'preferredSources'.
          */
         //Initializing the parameter 'site' by name that user sent from srcBox (JComboBox)
         for(Website w : preferredSources) {
@@ -596,8 +591,6 @@ public class GUI extends JFrame {
         if(srcBox.getSelectedIndex() != -1) {
             logoLabel.setToolTipText("Connect to: "+site.getMainUrl());
         }
-
-        //icon = new ImageIcon(img.getScaledInstance(40, 30, 4));
 
         logoLabel.setIcon(new ImageIcon(site.getImageFile().getScaledInstance(40,30,5)));
     }
