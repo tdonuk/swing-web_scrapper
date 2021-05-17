@@ -99,6 +99,14 @@ public class SourceManageService extends JFrame {
             JOptionPane.showMessageDialog(this,"Please select at least one source","Empty Source List",JOptionPane.ERROR_MESSAGE);
             return;
         }
+        parent.toFront();
+        if(sourceParser.isFirstTime()) {
+            if(sourceParser.isFirstTime()) {
+                String firstTimeText = "Your preferred sources is set now. You are ready to use LastNews." +
+                        " Click the menu box\non the top left corner to open drop down source list and then start a connection";
+                JOptionPane.showMessageDialog(parent,firstTimeText,"You Are Ready",JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
 
         sourceParser.setPreferredSources(this.preferredSources);
 
@@ -106,7 +114,6 @@ public class SourceManageService extends JFrame {
             parent.lock.notifyAll();
         }
 
-        parent.toFront();
         this.dispose();
 
     }
@@ -137,10 +144,10 @@ public class SourceManageService extends JFrame {
     }
 
     public void showFirstTimeMessage() {
-        String firstTimeText = "Welcome to News Scraper! Please select sources you interested in. " +
+        String firstTimeText = "Welcome to LastNews! Please select sources you interested in. " +
                 "This is a first time setup so you should not have to\ndo this again." +
                 " However, you can adjust your preferred sources anytime you want through menu -> source management." +
-                "\n\nThank you for using News Scrapper!";
+                "\n\nThank you for using LastNews!";
 
         JOptionPane.showMessageDialog(this,firstTimeText,"Welcome!",JOptionPane.INFORMATION_MESSAGE);
         this.toFront();

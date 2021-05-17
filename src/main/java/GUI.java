@@ -1,7 +1,12 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -23,6 +28,7 @@ public class GUI extends JFrame {
     private JButton exitButton;
     private JButton connectButton;
     private JButton examineButton;
+    private JButton shareButton;
     private JToggleButton connectionButton;
     private JComboBox srcBox;
     private JTabbedPane tabs;
@@ -109,7 +115,7 @@ public class GUI extends JFrame {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
-
+                        System.out.println(e.getMessage());
                     }
 
                 }
@@ -147,24 +153,24 @@ public class GUI extends JFrame {
         try {
             setIconImage(ImageIO.read(new File(dir + "main_icon.resources")));
         } catch (IOException ioexc) {
-            JOptionPane.showMessageDialog(this, "'Resources' Klasörü ile Çalıştırılabilir dosyanın aynı klasörde oladuğuna emin olunuz", "File error", 0);
+            JOptionPane.showMessageDialog(this, "Resource files not found. Please be sure that resources folder and exe file must be in the same folder", "File error", 0);
             System.exit(1);
         }
 
-        menu = new JMenu("Menü");
-        themeMenu = new JMenu("Tema");
+        menu = new JMenu("Menu");
+        themeMenu = new JMenu("Theme");
 
-        manageSourcesItem = new JMenuItem("Kaynak Yönetimi");
+        manageSourcesItem = new JMenuItem("Source Management");
         manageSourcesItem.addActionListener(e -> {
             sourceSetup();
         });
 
-        lightModeItem = new JMenuItem("Açık");
+        lightModeItem = new JMenuItem("Light");
         lightModeItem.addActionListener(e -> {
             applyLightMode();
         });
 
-        darkModeItem = new JMenuItem("Koyu");
+        darkModeItem = new JMenuItem("Dark");
         darkModeItem.addActionListener(e->{
             applyDarkMode();
         });
@@ -196,7 +202,7 @@ public class GUI extends JFrame {
 
         topComponents = new JPanel(new GridLayout(1, 5, 10, 10));
 
-        currency = new JLabel("Güncel Kur Verileri (₺)");
+        currency = new JLabel("Currency");
         currency.setForeground(Color.BLUE);
         usdLabel = new JLabel();
         euroLabel = new JLabel();
@@ -211,7 +217,7 @@ public class GUI extends JFrame {
         srcBoxSetup();
         srcBox.setSelectedIndex(-1);
         srcBox.setFont(srcFont);
-        srcBox.setToolTipText("Açılır kaynak listesine erişmek için tıklayınız.");
+        srcBox.setToolTipText("Click to open the dropdown source list");
         srcBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 srcBoxAction(e);
@@ -219,7 +225,7 @@ public class GUI extends JFrame {
         });
 
         connectionButton = new JToggleButton();
-        connectionButton.setToolTipText("Bağlantı kurmak için tıklayın. Haber listesi her 20 saniyede bir yenilenecektir");
+        connectionButton.setToolTipText("Click to establish a connection to selected source. The headers list will be refreshed every 20 seconds");
         connectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getHeaders(e);
@@ -230,7 +236,7 @@ public class GUI extends JFrame {
             }
         });
         connectionButton.setFont(srcFont);
-        connectionButton.setText("Bağlan");
+        connectionButton.setText("Connect");
 
         statusPanel = new JPanel(new FlowLayout());
         logoLabel = new JLabel();
@@ -253,7 +259,7 @@ public class GUI extends JFrame {
                 try {
                     logoMouserClicked(e);
                 } catch (Exception exc) {
-                    JOptionPane.showMessageDialog(connectButton, "Bağlantı Kurulamadı:  " + site.getMainUrl(), "Hata", 0);
+                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getMainUrl(), "Connection error", 0);
                 }
 
             }
@@ -288,7 +294,7 @@ public class GUI extends JFrame {
         listPane.setViewportView(list);
         listPanel.add(listPane);
 
-        tabs.addTab("Başlıklar", listPanel);
+        tabs.addTab("Headers", listPanel);
 
         contentPanel = new JPanel(new BorderLayout(20, 5));
 
@@ -309,11 +315,11 @@ public class GUI extends JFrame {
         contentPanel.add(currentHeaderLabel, "North");
         contentPanel.add(contentPane, "Center");
 
-        tabs.addTab("İçerikler", contentPanel);
+        tabs.addTab("Contents", contentPanel);
         tabs.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         downComponents = new JPanel(new GridBagLayout());
-        downComponents.setSize(getWidth() - 15, topComponents.getHeight());
+        downComponents.setPreferredSize(new Dimension(getWidth() - 15, topComponents.getHeight()));
 
         exitButton = new JButton("Exit");
         exitButton.addActionListener(new ActionListener() {
@@ -343,23 +349,34 @@ public class GUI extends JFrame {
             }
         });
 
+        shareButton = new JButton("Share");
+        shareButton.addActionListener(e -> {
+            shareButtonAction(e);
+        });
+
         GridBagConstraints c = new GridBagConstraints();
         c.weightx = 0.05D;
         c.weighty = 1.0D;
         c.fill = 1;
-        c.anchor = 17;
+        c.anchor = GridBagConstraints.WEST;
         c.gridx = 0;
         c.gridy = 0;
         c.insets = new Insets(5, 5, 5, 0);
         downComponents.add(examineButton, c);
+
         c.gridx = 1;
         c.gridy = 0;
         c.insets = new Insets(5, 5, 5, 5);
-        c.anchor = 17;
+        c.anchor = GridBagConstraints.WEST;
         downComponents.add(connectButton, c);
+
+        c.gridx = 2;
+        c.gridy = 0;
+        downComponents.add(shareButton , c);
+
         c.anchor = 13;
         c.weightx = 1.0D;
-        c.gridx = 2;
+        c.gridx = 3;
         c.gridy = 0;
         c.fill = 3;
         downComponents.add(exitButton, c);
@@ -457,7 +474,7 @@ public class GUI extends JFrame {
         try {
             cur = con.getCurrency();
         } catch (IOException var4) {
-            JOptionPane.showMessageDialog(null, "Döviz servisi ile bağlantı kurulamadı.", "Bağlantı hatası", 0);
+            JOptionPane.showMessageDialog(null, "Not possible to connect Currency service", "Connection error", 0);
         }
 
         if (cur[0] >= oldUsd) {
@@ -484,7 +501,7 @@ public class GUI extends JFrame {
             interestLabel.setForeground(red);
         }
 
-        interestLabel.setText("Faiz % : " + cur[2]);
+        interestLabel.setText("Int % : " + cur[2]);
 
 
         if (cur[3] >= oldGbp) {
@@ -493,7 +510,7 @@ public class GUI extends JFrame {
             gbpLabel.setForeground(red);
         }
 
-        gbpLabel.setText("Sterlin : " + cur[3]);
+        gbpLabel.setText("Pound : " + cur[3]);
 
 
         if (cur[4] >= oldInterest) {
@@ -502,13 +519,13 @@ public class GUI extends JFrame {
             goldLabel.setForeground(red);
         }
 
-        goldLabel.setText("Altın (Gr) : " + cur[4]);
+        goldLabel.setText("Gold (Gr) : " + cur[4]);
 
     }
 
     private void getHeaders(ActionEvent e) {
         if(null == site) { //Then user did not select any source
-            JOptionPane.showMessageDialog(this,"Lütfen önce kaynak listesinden bir kaynak seçiniz", "Kaynak seçmediniz",JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,"Please select a source from the dropdown list", "Source Not Selected",JOptionPane.ERROR_MESSAGE);
             connectionButton.setSelected(false);
             return;
         }
@@ -518,8 +535,7 @@ public class GUI extends JFrame {
             headers = site.getHeaders();
 
             if(null == headers) {
-                JOptionPane.showMessageDialog(this,srcBox.getSelectedItem().toString()+" Kaynağına bağlanılamadı başlık adresi yanlış olabilir\n" +
-                        "veya internet bağlantınız kopmuş olabilir", "Bağlantı Hatası",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,"Connection error: can't connect to "+srcBox.getSelectedItem().toString(), "Connection error",JOptionPane.ERROR_MESSAGE);
                 connectionButtonState(false);
                 return;
             }
@@ -543,7 +559,7 @@ public class GUI extends JFrame {
         connectionButton.setSelected(isSelected); //this will be used by sourceFrame. when user wants to choose new sources, current established connections must be finished
         if(isSelected) {
             connectionButton.setForeground(new Color(0xDE1C08));
-            connectionButton.setText("Bağlantıyı Kes");
+            connectionButton.setText("Disconnect");
             srcBox.setEnabled(false);
         }
         if(!isSelected) {
@@ -552,7 +568,7 @@ public class GUI extends JFrame {
             content.setText("");
             currentHeaderLabel.setText("");
             connectionButton.setForeground(new Color(4886847));
-            connectionButton.setText("Bağlan");
+            connectionButton.setText("Connect");
             srcBox.setEnabled(true);
             tabs.setSelectedIndex(0);
         }
@@ -578,7 +594,7 @@ public class GUI extends JFrame {
         }
 
         if(srcBox.getSelectedIndex() != -1) {
-            logoLabel.setToolTipText("Bağlanmak için tıklayınız: "+site.getMainUrl());
+            logoLabel.setToolTipText("Connect to: "+site.getMainUrl());
         }
 
         //icon = new ImageIcon(img.getScaledInstance(40, 30, 4));
@@ -601,13 +617,49 @@ public class GUI extends JFrame {
 
         con.getContent(selectedHeader,site);
 
-        content.setText("\nBaşlık\n\n"+selectedHeader.getContentHeader()+"\n\nDetay\n\n"+selectedHeader.getContentDetails());
+        content.setText("\nTitle\n\n"+selectedHeader.getContentHeader()+"\n\nDetails\n\n"+selectedHeader.getContentDetails());
 
         content.setCaretPosition(0);
     }
 
     private void ExitButtonAction(ActionEvent e) {
         System.exit(1);
+    }
+
+    private void shareButtonAction(ActionEvent e) {
+        if(srcBox.getSelectedIndex() == -1) return;
+        if(null == headers) return;
+        if(headers.isEmpty()) return;
+
+        Header header = null;
+
+        if(tabs.getSelectedIndex() == 0) {
+            for(Header h : headers) {
+                if(h.getHeader().equals(list.getSelectedValue())) {
+                    header = h;
+                }
+            }
+        }
+        else if(tabs.getSelectedIndex() == 1) {
+            for(Header h : headers) {
+                if(h.getHeader().equals(currentHeaderLabel.getText())) {
+                    header = h;
+                }
+            }
+        }
+
+
+        if(null == header) {
+            JOptionPane.showMessageDialog(this,"Selected header not found","Header not selected",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Clipboard clb = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection ss = new StringSelection(header.getLink());
+
+        clb.setContents(ss,null);
+
+        JOptionPane.showMessageDialog(this,"Link Copied! \n "+header.getLink(),"Share",JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void ConnectButtonAction(ActionEvent e) throws IOException, URISyntaxException {
@@ -662,6 +714,8 @@ public class GUI extends JFrame {
         connectButton.setForeground(examineButton.getForeground());
         exitButton.setBackground(examineButton.getBackground());
         exitButton.setForeground(examineButton.getForeground());
+        shareButton.setBackground(examineButton.getBackground());
+        shareButton.setForeground(examineButton.getForeground());
     }
 
     public void applyDarkMode() {
@@ -697,6 +751,8 @@ public class GUI extends JFrame {
         connectButton.setForeground(examineButton.getForeground());
         exitButton.setBackground(examineButton.getBackground());
         exitButton.setForeground(examineButton.getForeground());
+        shareButton.setBackground(examineButton.getBackground());
+        shareButton.setForeground(examineButton.getForeground());
     }
 
     public void showSourcesFrame() {
