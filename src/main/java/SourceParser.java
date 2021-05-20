@@ -22,7 +22,7 @@ public class SourceParser {
 
     public SourceParser() {
         currentDir = System.getProperty("user.dir");
-        sourcesFile = new File(currentDir+"\\resources\\data\\sources.data");
+        sourcesFile = new File(currentDir+"\\data\\sources.data");
 
 
         programDataDir = System.getenv("ProgramData");
@@ -109,7 +109,7 @@ public class SourceParser {
             br.close();
             fr.close();
         } catch(IOException e) {
-            showFileError(file.toPath().toString());
+            showFileError(site.getImageFileName());
         }
 
         Collections.sort(sourceList, Comparator.comparing(Website::getName));
