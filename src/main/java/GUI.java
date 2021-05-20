@@ -453,7 +453,6 @@ public class GUI extends JFrame {
 
         final GUI main = new GUI();
 
-
         SourceParser sp = new SourceParser();
 
         main.setVisible(true);
