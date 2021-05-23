@@ -52,7 +52,7 @@ public class LanguageHandler {
         return this.texts;
     }
 
-    public static File prefLangFile = new File("lang.txt");
+    public static File prefLangFile = new File(System.getenv("ProgramData") + "\\LastNews\\lang.txt");
 
     public void setPreferredLang() {
         String prefLang = "";
