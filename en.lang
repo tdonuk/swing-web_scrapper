@@ -16,22 +16,18 @@ This file includes whole string data for entire program. Used for localization.
 
 6: Please select a header
 
-7: Not found. if you're using portable version, please be sure that 'data' and 'resources' folders are
-in the same directory with executable file otherwise, try using installer. If you're using installed version,
-try removing and reinstalling.
+7: Not found. Reinstalling LastNews can fix the issue
 
 8: Please select at least one source
 
 9: Source not selected
 
+
 -- Messages --
 
-21: Your preferences is applied succesfully. Select a source from the drop-down list at the top left corner and start a connection
-by clicking connection button.
+21: Your preferences is applied succesfully. LastNews is ready to use.
 
-22: Welcome to LastNews. You are seeing this because you have opened LaseNews first time on this pc, this is a first-time setup.
-so you should not have to do this again. However you can change your preferences anytime through Menu -> Source Preferences.
-Please select sources you interested in from current supported source list below.
+22: Thank you for using LastNews. Please finish your first-time setup. You will not need to do this again
 
 23: Link Copied !
 
@@ -51,6 +47,7 @@ Please select sources you interested in from current supported source list below
 
 31: Your language preferences will be applied when you open LastNews next time
 
+
 -- Labels --
 
 41: Menu
@@ -68,6 +65,7 @@ Please select sources you interested in from current supported source list below
 53: Content
 54: Click to select
 55: Language
+
 
 -- Buttons --
 

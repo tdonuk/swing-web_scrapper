@@ -4,8 +4,7 @@ This file includes whole string data for entire program. Used for localization.
 
 -- Errors --
 
-1: Bağlanmaya çalıştığınız sitenin ana sayfa URL'si bozuk olabilir.
-Sorunun çözümü için yeniden kurulum yapmayı deneyebilirsiniz.
+1: İnternet bağlantısı bulunamadı veya bağlanmaya çalıştığnız URL hatalı
 
 2: Bağlanmaya çalıştığınız sitenin ana liste adresi hatalı
 
@@ -17,21 +16,18 @@ Sorunun çözümü için yeniden kurulum yapmayı deneyebilirsiniz.
 
 6: Lütfen bir başlık seçiniz
 
-7: bulunamadı. Eğer taşınabilir versiyonu kullanıyorsanız 'data' ve 'resources' klasörleri ile
-çalıştırılabilir dosyanın aynı dizinde olduğundan emin olunuz veya yükleyici yardımıyla yeniden kurulum yapınız.
+7: bulunamadı. Yeniden kurulum yapmak sorunu çözebilir
 
 8: Lütfen en az bir kaynak seçiniz
 
 9: Kaynak seçilmedi
 
+
 -- Messages --
 
-21: Tercihleriniz başarıyla uygulandı. Sol üst köşedeki açılır listeden bir kaynak seçin ve Bağlan tuşuna tıklayarak
-bir bağlantı başlatın.
+21: Tercihleriniz başarıyla uygulandı. LastNews kullanıma hazır.
 
-22: LastNews'e hoşgeldiniz. İlk kez LastNews çalıştırdığınız için bununla karşılaştınız, bunu her seferinde yapmanız gerekmeyecek.
-Yine de istediğiniz zaman Menü -> Kaynak Yönetimi kısmından tercihlerinizi değiştirebilirsiniz. Şimdilik Lütfen aşağıdaki desteklenen kaynak
-listemizden ilgilendiğiniz kaynakları seçiniz.
+22: İlk çalıştırma kurulumunu yapmak için ilgilendiğiniz kaynakları seçiniz. Bunu tekrar yapmanız gerekmeyecek.
 
 23: Link kopyalandı !
 
@@ -51,6 +47,7 @@ listemizden ilgilendiğiniz kaynakları seçiniz.
 
 31: Dil tercihiniz LastNews'i bir dahaki başlatışınızda uygulanmak üzere kaydedildi
 
+
 -- Labels --
 
 41: Menü
@@ -69,7 +66,9 @@ listemizden ilgilendiğiniz kaynakları seçiniz.
 54: Seçmek için tıklayın
 55: Dil
 
+
 -- Buttons --
+
 71: Bağlan
 72: Bağlantıyı Kes
 73: Oku
