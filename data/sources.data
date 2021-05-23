@@ -1,5 +1,5 @@
 <source>
-name: Haberturk
+name: Habertürk
 main-url: https://www.haberturk.com
 headers-url: /gundem
 main-list-address: div[class='detail-container'] div[class='box-row clear-box'] div[class='box-xs-6 box-sm-6 box-md-6 box-lg-6']
@@ -11,7 +11,7 @@ icon: haberturk_logo.resources
 </source>
 
 <source>
-name: NTV
+name: NTV Türkiye
 main-url: https://www.ntv.com.tr
 headers-url: /turkiye
 main-list-address: div[class='ntv-content-inner'] div[class='category-multiple-item ']
@@ -23,7 +23,7 @@ icon: ntv_logo.resources
 </source>
 
 <source>
-name: CNN
+name: CNN Türkiye
 main-url: https://www.cnnturk.com
 headers-url: /turkiye
 main-list-address: div[class='container'] div[class='row'] div[class^='col-']
@@ -47,7 +47,7 @@ icon: milliyet_logo.resources
 </source>
 
 <source>
-name: Hurriyet
+name: Hürriyet
 main-url: https://www.hurriyet.com.tr
 headers-url: /gundem
 main-list-address: li[class^='main-newslist-item col-lg-4 col-md-6 col-xs-12'],li[class^='main-newslist-item col-md-4 col-xs-6'],li[class^='main-newslist-item col-md-6 col-xs-12'],li[class^='main-newslist-item col-md-6']
@@ -59,7 +59,7 @@ icon: hurriyet_logo.resources
 </source>
 
 <source>
-name: BBC Turkce
+name: BBC Türkçe
 main-url: https://www.bbc.com
 headers-url: /turkce
 main-list-address: li[dir='ltr'] div[dir='ltr'] h3
@@ -71,7 +71,7 @@ icon: bbcturk_logo.resources
 </source>
 
 <source>
-name: Euronews Turkce
+name: Euronews Türkçe
 main-url: https://tr.euronews.com
 headers-url: /
 main-list-address: article[data-nid]
@@ -95,7 +95,7 @@ icon: sabah_logo.resources
 </source>
 
 <source>
-name: Aksam
+name: Akşam
 main-url: https://www.aksam.com.tr
 headers-url: /son-dakika/guncel-haberleri/
 main-list-address: div[class='photogbox photogbox6 breakingnews']
