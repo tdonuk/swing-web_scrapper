@@ -68,6 +68,11 @@ public class LanguageHandler {
 
 
     public String getPreferredLang() {
+        if(!prefLangFile.exists()){
+            langFile = new File("en.lang");
+            setPreferredLang();
+        }
+
         String s = "";
         try {
             s = Files.readString(prefLangFile.toPath());
