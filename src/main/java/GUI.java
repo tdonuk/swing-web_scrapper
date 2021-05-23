@@ -12,10 +12,13 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import util.*;
+import util.dto.*;
+import util.dto.Label;
 
 public class GUI extends JFrame {
-    private Image img = null;
-    private Icon icon = null;
     private JPanel body;
     private JPanel topComponents;
     private JPanel statusPanel;
@@ -42,18 +45,19 @@ public class GUI extends JFrame {
     private JLabel currentHeaderLabel;
     private JLabel statusLabel;
     private JTextArea content;
-    private ArrayList<Website> sources,preferredSources;
+    private Website site;
+    private ArrayList<Website> preferredSources;
     private ArrayList<Header> headers;
     private String dir = "";
-    private String logoName = "";
-    private Website site;
     private Connection con;
     private SourceParser sourceParser;
     private JMenuBar menuBar;
     private JMenu menu,themeMenu;
-    private JMenuItem manageSourcesItem,lightModeItem,darkModeItem;
+    private JMenuItem manageSourcesItem,lightModeItem,darkModeItem, languageItem;
     private SourceManageService sms;
-    public Object lock = new Object(); //Will be used to stop thread
+    public Object lock = new Object(); //Will be used to stop the thread
+    public LanguageHandler lh;
+    private HashMap<Label,String> labels;
 
     private Timer currencyTimer = new Timer(6000, new ActionListener() {
         public void actionPerformed(ActionEvent e) {
@@ -79,17 +83,47 @@ public class GUI extends JFrame {
 
     public GUI() throws IOException {
         sourceParser = new SourceParser();
-
+        lh = new LanguageHandler();
         con = new Connection();
 
         if(sourceParser.isFirstTime()) {
+            askForLanguage();
             sourceSetup();
         } else {
+            //Language initializing
+            lh.setLangFile(new File(lh.getPreferredLang()+".lang"));
+            lh.setStrings();
+            labels = lh.getTexts();
+
+            //Source preferences initializing
             preferredSources = sourceParser.getPreferredSources();
             this.setVisible(true);
         }
 
         initComponents();
+    }
+
+    private void askForLanguage() {
+        String langFileName;
+
+        Object[] options = new Object[]{"Türkçe","English"};
+        langFileName = (String) JOptionPane.showInputDialog(null,"Please select language","Language",JOptionPane.QUESTION_MESSAGE,null,options,options[0]);
+
+        if(null == langFileName) System.exit(1);
+
+        if(langFileName.equals("Türkçe")) {
+            langFileName = "tr.lang";
+        }
+        else if(langFileName.equals("English")) {
+            langFileName = "en.lang";
+        }
+
+        lh.setLangFile(new File(langFileName));
+
+        lh.setPreferredLang();
+        lh.setStrings();
+
+        labels = lh.getTexts();
     }
 
     private void srcBoxSetup() {
@@ -140,6 +174,12 @@ public class GUI extends JFrame {
         t.start();
     }
 
+    private void langSetup() {
+        askForLanguage();
+        String message = labels.get(Label.LANGUAGE_CHANGED);
+        JOptionPane.showMessageDialog(null,message,"Language Changed",JOptionPane.INFORMATION_MESSAGE);
+        System.exit(1);
+    }
 
     private void initComponents() throws IOException {
         //Defining initial components of the user interface
@@ -153,24 +193,33 @@ public class GUI extends JFrame {
         try {
             setIconImage(ImageIO.read(new File(dir + "main_icon.resources")));
         } catch (IOException ioexc) {
-            JOptionPane.showMessageDialog(this, "Resource files not found. Please be sure that resources folder and exe file must be in the same folder", "File error", 0);
+            String message = "main_icon.resources "+labels.get(Label.FILE_NOT_FOUND)+"  ("+ Label.FILE_NOT_FOUND.getCode() +")";
+            JOptionPane.showMessageDialog(this, message, "File error", 0);
             System.exit(1);
         }
 
-        menu = new JMenu("Menu");
-        themeMenu = new JMenu("Theme");
+        menu = new JMenu(labels.get(Label.MENU));
+        themeMenu = new JMenu(labels.get(Label.THEME));
 
-        manageSourcesItem = new JMenuItem("Source Management");
+        languageItem = new JMenuItem(labels.get(Label.LANGUAGE));
+        languageItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                langSetup();
+            }
+        });
+
+        manageSourcesItem = new JMenuItem(labels.get(Label.SOURCE_MANAGEMENT));
         manageSourcesItem.addActionListener(e -> {
             sourceSetup();
         });
 
-        lightModeItem = new JMenuItem("Light");
+        lightModeItem = new JMenuItem(labels.get(Label.LIGHT));
         lightModeItem.addActionListener(e -> {
             applyLightMode();
         });
 
-        darkModeItem = new JMenuItem("Dark");
+        darkModeItem = new JMenuItem(labels.get(Label.DARK));
         darkModeItem.addActionListener(e->{
             applyDarkMode();
         });
@@ -186,8 +235,10 @@ public class GUI extends JFrame {
         lightModeItem.setFont(menuFont);
         darkModeItem.setFont(menuFont);
         themeMenu.setFont(menuFont);
+        languageItem.setFont(menuFont);
         menu.setFont(menuFont);
 
+        menu.add(languageItem);
         menu.add(manageSourcesItem);
         menu.add(themeMenu);
         menuBar.setBackground(new Color(0xBFBFD2));
@@ -196,13 +247,12 @@ public class GUI extends JFrame {
 
         this.setJMenuBar(menuBar);
 
-        //Adjusting location of the frame to show up in the center of the screen
-        Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-        setLocation((d.width - getWidth()) / 2, (d.height - getHeight()) / 2);
+        //To make frame show up at center of the screen
+        this.setLocationRelativeTo(null);
 
         topComponents = new JPanel(new GridLayout(1, 5, 10, 10));
 
-        currency = new JLabel("Currency");
+        currency = new JLabel();
         currency.setForeground(Color.BLUE);
         usdLabel = new JLabel();
         euroLabel = new JLabel();
@@ -217,15 +267,15 @@ public class GUI extends JFrame {
         srcBoxSetup();
         srcBox.setSelectedIndex(-1);
         srcBox.setFont(srcFont);
-        srcBox.setToolTipText("Click to open the dropdown source list");
         srcBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 srcBoxAction(e);
             }
         });
 
+        currency.setFont(srcFont);
+
         connectionButton = new JToggleButton();
-        connectionButton.setToolTipText("Click to establish a connection to selected source. The headers list will be refreshed every 20 seconds");
         connectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 getHeaders(e);
@@ -236,7 +286,6 @@ public class GUI extends JFrame {
             }
         });
         connectionButton.setFont(srcFont);
-        connectionButton.setText("Connect");
 
         statusPanel = new JPanel(new FlowLayout());
         logoLabel = new JLabel();
@@ -259,7 +308,8 @@ public class GUI extends JFrame {
                 try {
                     logoMouserClicked(e);
                 } catch (Exception exc) {
-                    JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getMainUrl(), "Connection error", 0);
+                    String message = labels.get(Label.LOGO_LABEL_CONNECTION_ERROR+" ") + site.getMainUrl() + " ("+Label.LOGO_LABEL_CONNECTION_ERROR.getCode()+")";
+                    JOptionPane.showMessageDialog(connectButton,message, "Connection error", 0);
                 }
 
             }
@@ -294,7 +344,7 @@ public class GUI extends JFrame {
         listPane.setViewportView(list);
         listPanel.add(listPane);
 
-        tabs.addTab("Headers", listPanel);
+        tabs.addTab(labels.get(Label.HEADERS_LABEL), listPanel);
 
         contentPanel = new JPanel(new BorderLayout(20, 5));
 
@@ -315,41 +365,40 @@ public class GUI extends JFrame {
         contentPanel.add(currentHeaderLabel, "North");
         contentPanel.add(contentPane, "Center");
 
-        tabs.addTab("Contents", contentPanel);
+        tabs.addTab(labels.get(Label.CONTENTS_LABEL), contentPanel);
         tabs.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
         downComponents = new JPanel(new GridBagLayout());
         downComponents.setPreferredSize(new Dimension(getWidth() - 15, topComponents.getHeight()));
 
-        exitButton = new JButton("Exit");
+        exitButton = new JButton();
         exitButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ExitButtonAction(e);
             }
         });
 
-        connectButton = new JButton("Read More");
+        connectButton = new JButton();
         connectButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
                     ConnectButtonAction(e);
-                } catch (IOException var3) {
-          //          JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
-                } catch (URISyntaxException var4) {
-       //             JOptionPane.showMessageDialog(connectButton, "Not possible to connect  " + site.getUrl(), "Connection error", 0);
+                } catch (Exception a) {
+                    String message = labels.get(Label.CONTENT_LINK_ERROR + "  ("+Label.CONTENT_LINK_ERROR.getCode()+")");
+                    JOptionPane.showMessageDialog(null,message,"Connection Error",JOptionPane.ERROR_MESSAGE);
                 }
 
             }
         });
 
-        examineButton = new JButton("Examine");
+        examineButton = new JButton();
         examineButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ExamineButtonAction(e);
             }
         });
 
-        shareButton = new JButton("Share");
+        shareButton = new JButton();
         shareButton.addActionListener(e -> {
             shareButtonAction(e);
         });
@@ -432,6 +481,21 @@ public class GUI extends JFrame {
         currencyTimer.start();
 
         applyDarkMode();
+        setLabels();
+    }
+
+    private void setLabels() {
+        srcBox.setToolTipText(labels.get(Label.COMBOBOX_TOOLTIP));
+
+        connectionButton.setText(labels.get(Label.CONNECTION_CONNECT_TEXT));
+        connectionButton.setToolTipText(labels.get(Label.CONNECTION_TOOLTIP));
+
+        examineButton.setText(labels.get(Label.EXAMINE_TEXT));
+        connectButton.setText(labels.get(Label.READ_MORE_TEXT));
+        shareButton.setText(labels.get(Label.SHARE_TEXT));
+        exitButton.setText(labels.get(Label.EXIT));
+
+        currency.setText(labels.get(Label.CURRENCY));
     }
 
     public static void main(String[] args) throws IOException {
@@ -471,7 +535,8 @@ public class GUI extends JFrame {
         try {
             cur = con.getCurrency();
         } catch (IOException var4) {
-            JOptionPane.showMessageDialog(null, "Not possible to connect Currency service", "Connection error", 0);
+            String message = labels.get(Label.CURRENCY_CONNECTION_ERROR) + " (" + Label.CURRENCY_CONNECTION_ERROR +")";
+            JOptionPane.showMessageDialog(null, message, "Connection error", JOptionPane.ERROR_MESSAGE);
         }
 
         if (cur[0] >= oldUsd) {
@@ -480,7 +545,7 @@ public class GUI extends JFrame {
             usdLabel.setForeground(red);
         }
 
-        usdLabel.setText("$ : " + cur[0]);
+        usdLabel.setText(labels.get(Label.USD_LABEL) + " : " + cur[0]);
 
 
         if (cur[1] >= oldEuro) {
@@ -489,7 +554,7 @@ public class GUI extends JFrame {
             euroLabel.setForeground(red);
         }
 
-        euroLabel.setText("€ : " + cur[1]);
+        euroLabel.setText(labels.get(Label.EURO_LABEL) +" : " + cur[1]);
 
 
         if (cur[2] >= oldInterest) {
@@ -498,7 +563,7 @@ public class GUI extends JFrame {
             interestLabel.setForeground(red);
         }
 
-        interestLabel.setText("Int % : " + cur[2]);
+        interestLabel.setText(labels.get(Label.INT_LABEL) +" : " + cur[2]);
 
 
         if (cur[3] >= oldGbp) {
@@ -507,22 +572,23 @@ public class GUI extends JFrame {
             gbpLabel.setForeground(red);
         }
 
-        gbpLabel.setText("Pound : " + cur[3]);
+        gbpLabel.setText(labels.get(Label.POUND_LABEL) +" : " + cur[3]);
 
 
-        if (cur[4] >= oldInterest) {
+        if (cur[4] >= oldGold) {
             goldLabel.setForeground(green);
         } else  {
             goldLabel.setForeground(red);
         }
 
-        goldLabel.setText("Gold (Gr) : " + cur[4]);
+        goldLabel.setText(labels.get(Label.GOLD_LABEL)+" : " + cur[4]);
 
     }
 
     private void getHeaders(ActionEvent e) {
         if(null == site) { //Then user did not select any source
-            JOptionPane.showMessageDialog(this,"Please select a source from the dropdown list", "Source Not Selected",JOptionPane.ERROR_MESSAGE);
+            String message = labels.get(Label.SOURCE_NOT_SELECTED) + "  ("+ Label.SOURCE_NOT_SELECTED.getCode() +")";
+            JOptionPane.showMessageDialog(this,message, "Error",JOptionPane.ERROR_MESSAGE);
             connectionButton.setSelected(false);
             return;
         }
@@ -532,7 +598,7 @@ public class GUI extends JFrame {
             headers = site.getHeaders();
 
             if(null == headers) {
-                JOptionPane.showMessageDialog(this,"Connection error: can't connect to "+srcBox.getSelectedItem().toString(), "Connection error",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this,"Unknown error: "+srcBox.getSelectedItem().toString(), "Error",JOptionPane.ERROR_MESSAGE);
                 connectionButtonState(false);
                 return;
             }
@@ -556,7 +622,7 @@ public class GUI extends JFrame {
         connectionButton.setSelected(isSelected); //this will be used by sourceFrame. when user wants to choose new sources, current established connections must be finished
         if(isSelected) {
             connectionButton.setForeground(new Color(0xDE1C08));
-            connectionButton.setText("Disconnect");
+            connectionButton.setText(labels.get(Label.CONNECTION_DISCONNECT_TEXT));
             srcBox.setEnabled(false);
         }
         if(!isSelected) {
@@ -565,7 +631,7 @@ public class GUI extends JFrame {
             content.setText("");
             currentHeaderLabel.setText("");
             connectionButton.setForeground(new Color(4886847));
-            connectionButton.setText("Connect");
+            connectionButton.setText(labels.get(Label.CONNECTION_CONNECT_TEXT));
             srcBox.setEnabled(true);
             tabs.setSelectedIndex(0);
         }
@@ -588,7 +654,7 @@ public class GUI extends JFrame {
         }
 
         if(srcBox.getSelectedIndex() != -1) {
-            logoLabel.setToolTipText("Connect to: "+site.getMainUrl());
+            logoLabel.setToolTipText(labels.get(Label.LOGO_LABEL_TOOLTIP)+" "+site.getMainUrl());
         }
 
         logoLabel.setIcon(new ImageIcon(site.getImageFile().getScaledInstance(40,30,5)));
@@ -609,7 +675,9 @@ public class GUI extends JFrame {
 
         con.getContent(selectedHeader,site);
 
-        content.setText("\nTitle\n\n"+selectedHeader.getContentHeader()+"\n\nDetails\n\n"+selectedHeader.getContentDetails());
+        String titleLabel = labels.get(Label.CONTENTS_TITLE);
+        String detailsLabel = labels.get(Label.CONTENTS_DETAILS);
+        content.setText("\n"+titleLabel+"\n\n"+selectedHeader.getContentHeader()+"\n\n"+detailsLabel+"\n\n"+selectedHeader.getContentDetails());
 
         content.setCaretPosition(0);
     }
@@ -642,7 +710,8 @@ public class GUI extends JFrame {
 
 
         if(null == header) {
-            JOptionPane.showMessageDialog(this,"Selected header not found","Header not selected",JOptionPane.ERROR_MESSAGE);
+            String message = labels.get(Label.HEADER_NOT_SELECTED_ERROR) + "  (" + Label.HEADER_NOT_SELECTED_ERROR.getCode() +")";
+            JOptionPane.showMessageDialog(this, message,"Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -651,7 +720,8 @@ public class GUI extends JFrame {
 
         clb.setContents(ss,null);
 
-        JOptionPane.showMessageDialog(this,"Link Copied! \n "+header.getLink(),"Share",JOptionPane.INFORMATION_MESSAGE);
+        String message = labels.get(Label.SHARE_BUTTON_MESSAGE);
+        JOptionPane.showMessageDialog(this,message,"Share",JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void ConnectButtonAction(ActionEvent e) throws IOException, URISyntaxException {
@@ -674,11 +744,13 @@ public class GUI extends JFrame {
     }
 
     public void applyLightMode() {
-        topComponents.setBackground(new Color(0xF1EBDF));
+        topComponents.setBackground(new Color(0xF8F3F3));
         topComponents.setBorder(BorderFactory.createLineBorder(Color.black));
 
         connectionButton.setBackground(new Color(0xCCDAF6));
         connectionButton.setForeground(new Color(0x185C0A));
+
+        currency.setForeground(new Color(0x2020A3));
 
         srcBox.setBackground(connectionButton.getBackground());
         srcBox.setForeground(Color.black);
@@ -717,6 +789,8 @@ public class GUI extends JFrame {
         connectionButton.setBackground(new Color(0x202045));
         connectionButton.setForeground(new Color(0x4CD249));
 
+        currency.setForeground(new Color(0x7979E8));
+
         srcBox.setBackground(connectionButton.getBackground());
         srcBox.setForeground(new Color(0xC68312));
 
@@ -748,7 +822,7 @@ public class GUI extends JFrame {
     }
 
     public void showSourcesFrame() {
-        sms = new SourceManageService(this);
+        sms = new SourceManageService(this.lock,this.labels);
         sms.toFront();
     }
 
