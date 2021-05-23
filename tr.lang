@@ -1,0 +1,79 @@
+lang: Türkçe
+This file includes whole string data for entire program. Used for localization.
+
+
+-- Errors --
+
+1: Bağlanmaya çalıştığınız sitenin ana sayfa URL'si bozuk olabilir.
+Sorunun çözümü için yeniden kurulum yapmayı deneyebilirsiniz.
+
+2: Bağlanmaya çalıştığınız sitenin ana liste adresi hatalı
+
+3: Hatalı link veya internet bağlantısı bulunamadı
+
+4: Bağlantı kurulamadı:
+
+5: Döviz veri sağlayıcısına bağlanılamadı
+
+6: Lütfen bir başlık seçiniz
+
+7: bulunamadı. Eğer taşınabilir versiyonu kullanıyorsanız 'data' ve 'resources' klasörleri ile
+çalıştırılabilir dosyanın aynı dizinde olduğundan emin olunuz veya yükleyici yardımıyla yeniden kurulum yapınız.
+
+8: Lütfen en az bir kaynak seçiniz
+
+9: Kaynak seçilmedi
+
+-- Messages --
+
+21: Tercihleriniz başarıyla uygulandı. Sol üst köşedeki açılır listeden bir kaynak seçin ve Bağlan tuşuna tıklayarak
+bir bağlantı başlatın.
+
+22: LastNews'e hoşgeldiniz. İlk kez LastNews çalıştırdığınız için bununla karşılaştınız, bunu her seferinde yapmanız gerekmeyecek.
+Yine de istediğiniz zaman Menü -> Kaynak Yönetimi kısmından tercihlerinizi değiştirebilirsiniz. Şimdilik Lütfen aşağıdaki desteklenen kaynak
+listemizden ilgilendiğiniz kaynakları seçiniz.
+
+23: Link kopyalandı !
+
+24: Açılır liste için tıklayın.
+
+25: Bağlantıyı başlatmak için tıklayın. (Haber listesi her 20 saniyede bir yenilenir).
+
+26: Bağlan:
+
+27: Başlık
+
+28: Detaylar
+
+29: tercihlerinize eklendi
+
+30: tercihlerinizden silindi
+
+31: Dil tercihiniz LastNews'i bir dahaki başlatışınızda uygulanmak üzere kaydedildi
+
+-- Labels --
+
+41: Menü
+42: Kaynak Tercihleri
+43: Tema
+44: Koyu Tema
+45: Açık Tema
+46: Döviz
+47: Dolar $
+48: Euro €
+49: Sterlin
+50: Altın (Gr)
+51: Faiz (%)
+52: Başlıklar
+53: İçerik
+54: Seçmek için tıklayın
+55: Dil
+
+-- Buttons --
+71: Bağlan
+72: Bağlantıyı Kes
+73: Oku
+74: Devamı..
+75: Paylaş
+76: Çıkış
+77: Onayla
