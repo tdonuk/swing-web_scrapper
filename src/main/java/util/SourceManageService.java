@@ -134,12 +134,12 @@ public class SourceManageService extends JFrame {
         String text = " ";
         if(preferredSources.contains(w)) {
             preferredSources.remove(w);
-            String message = labels.get(Label.LOG_SOURCE_ADDED);
+            String message = labels.get(Label.LOG_SOURCE_REMOVED);
             infoLabel.setText("log: "+w.getName()+ " " + message +"\n"+infoLabel.getText());
             infoLabel.setCaretPosition(0);
         } else if(!preferredSources.contains(w)){
             preferredSources.add(w);
-            String message = labels.get(Label.LOG_SOURCE_REMOVED);
+            String message = labels.get(Label.LOG_SOURCE_ADDED);
             infoLabel.setText("log: "+w.getName()+ " " + message +"\n"+infoLabel.getText());
             infoLabel.setCaretPosition(0);
         }
