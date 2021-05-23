@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,7 +50,7 @@ public class SourceParser {
 
     public ArrayList<Website> parseSources(File file) {
         try{
-            wholeText = Files.readString(file.toPath(), StandardCharsets.ISO_8859_1);
+            wholeText = Files.readString(file.toPath(), StandardCharsets.UTF_8);
 
             wholeText = wholeText.replaceAll("\\r\\n|\\n", "");
 
