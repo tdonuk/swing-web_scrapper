@@ -1,7 +1,9 @@
+package util.dto;
+
 import java.awt.*;
 import java.util.ArrayList;
 
-//Website DTO
+//util.dao.Website DTO
 //The data this file containing will be parsed from a txt file
 public class Website {
     private String name;

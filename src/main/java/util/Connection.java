@@ -1,3 +1,5 @@
+package util;
+
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -7,8 +9,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import javax.swing.*;
+import util.dto.*;
+import javax.swing.JOptionPane;
 
 public class Connection {
     private Document contentsDoc,newsDoc,currencyDoc;
@@ -57,7 +59,6 @@ public class Connection {
 
     public void getContent(Header header , Website site) {
         if(newsDoc.equals(null) || header.getLink().equals(null)) {
-            JOptionPane.showMessageDialog(null,"URL not found","Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
 

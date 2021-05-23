@@ -1,4 +1,6 @@
-//Header DTO
+package util.dto;
+
+//util.dao.Header DTO
 public class Header {
     private String header;
     private String link;

@@ -1,3 +1,5 @@
+package util;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +10,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import util.dto.*;
 
 public class SourceParser {
     private File sourcesFile,preferredSourcesFile;
@@ -118,10 +121,7 @@ public class SourceParser {
     }
 
     public boolean isFirstTime() {
-        if(preferredSourcesFile.canRead()) return false;
-        else {
-            return true;
-        }
+        return (! preferredSourcesFile.exists());
     }
 
     public void setPreferredSources(ArrayList<Website> list) {

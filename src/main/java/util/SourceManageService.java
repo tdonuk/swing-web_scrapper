@@ -1,19 +1,28 @@
+package util;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import util.dto.*;
+import util.dto.Label;
 
 public class SourceManageService extends JFrame {
     private JPanel mainPanel,contentPanel;
     private JScrollPane scrollPaneLog,scrollPaneList;
     private JButton confirmButton;
     private JTextArea infoLabel;
-    private ArrayList<Website> sources,preferredSources;
+    private ArrayList<Website> sources;
+    private ArrayList<Website> preferredSources;
     private SourceParser sourceParser;
-    private GUI parent;
+    private Object lock;
+    private HashMap<Label,String> labels;
 
-    public SourceManageService(GUI parent) {
-        this.parent = parent;
+    public SourceManageService(Object lock, HashMap<Label,String> labels) {
+        this.labels = labels;
+        this.lock = lock;
 
         sourceParser = new SourceParser();
 
@@ -28,23 +37,24 @@ public class SourceManageService extends JFrame {
     private void initComponents() {
         this.setSize(800,900);
         this.setResizable(false);
-        this.getContentPane().setBackground(new Color(0xEFDBDB));
-        this.setLocationRelativeTo(parent);
+        this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         mainPanel = new JPanel();
+        mainPanel.setBackground(new Color(0x000000));
         mainPanel.setLayout(new BorderLayout(10,0));
         contentPanel = new JPanel();
         contentPanel.setLayout(new GridLayout(sources.size(),1,5,10));
         contentPanel.setPreferredSize(new Dimension(400,400));
 
         scrollPaneList = new JScrollPane(contentPanel);
+        contentPanel.setBackground(mainPanel.getBackground());
         scrollPaneList.setPreferredSize(new Dimension(400,300));
 
         preferredSources = new ArrayList<Website>();
 
         infoLabel = new JTextArea();
-        infoLabel.setText("You can find and select current supported source list below.");
+        infoLabel.setText("~Log~");
         infoLabel.setLineWrap(true);
         infoLabel.setWrapStyleWord(true);
         infoLabel.setEditable(false);
@@ -60,13 +70,14 @@ public class SourceManageService extends JFrame {
         JCheckBox checkBox;
         for(Website w : sources) {
             panel = new JPanel();
-            panel.setBackground(new Color(0xFFF7F7));
+            panel.setBackground(new Color(0x000C23));
             panel.setPreferredSize(new Dimension(100,60));
             panel.setLayout(new GridLayout(1,4));
 
             label = new JLabel(new ImageIcon(w.getImageFile().getScaledInstance(80,60,4)));
             checkBox = new JCheckBox();
-            checkBox.setText("Click to select "+w.getName());
+            checkBox.setText(labels.get(Label.CHECKBOX_LABEL)+": "+w.getName());
+            checkBox.setForeground(Color.LIGHT_GRAY);
             checkBox.setPreferredSize(new Dimension(80,40));
             checkBox.setFont(new Font(checkBox.getFont().getName(),Font.BOLD,15));
             checkBox.addActionListener(e -> {
@@ -78,8 +89,9 @@ public class SourceManageService extends JFrame {
 
             contentPanel.add(panel);
         }
-        confirmButton = new JButton("Confirm");
-        confirmButton.setBackground(new Color(0x067906));
+        confirmButton = new JButton();
+        confirmButton.setText(labels.get(Label.CONFIRM));
+        confirmButton.setBackground(new Color(0x24A746));
         confirmButton.setPreferredSize(new Dimension(70,50));
         confirmButton.addActionListener(e->{
             confirmAction(e);
@@ -96,24 +108,22 @@ public class SourceManageService extends JFrame {
 
     private void confirmAction(ActionEvent e) {
         if(this.preferredSources.isEmpty()) {
-            JOptionPane.showMessageDialog(this,"Please select at least one source","Empty Source List",JOptionPane.ERROR_MESSAGE);
+            String message = labels.get(Label.EMPTY_PREFERENCES_ERROR) + "  ("+ Label.EMPTY_PREFERENCES_ERROR.getCode() + ")";
+            JOptionPane.showMessageDialog(this,message,"Error",JOptionPane.ERROR_MESSAGE);
             return;
         }
-        parent.toFront();
-        parent.setEnabled(true);
 
         if(sourceParser.isFirstTime()) {
             if(sourceParser.isFirstTime()) {
-                String firstTimeText = "Your preferred sources is set now. You are ready to use LastNews." +
-                        " Click the menu box\non the top left corner to open drop down source list and then start a connection";
-                JOptionPane.showMessageDialog(parent,firstTimeText,"You Are Ready",JOptionPane.INFORMATION_MESSAGE);
+                String message = labels.get(Label.FIRST_TIME_MESSAGE);
+                JOptionPane.showMessageDialog(null,message,"Ready",JOptionPane.INFORMATION_MESSAGE);
             }
         }
 
         sourceParser.setPreferredSources(this.preferredSources);
 
-        synchronized (parent.lock) {
-            parent.lock.notifyAll();
+        synchronized (this.lock) {
+            lock.notifyAll();
         }
 
         this.dispose();
@@ -121,14 +131,16 @@ public class SourceManageService extends JFrame {
     }
 
     private void checkBoxAction(ActionEvent e, Website w) {
-        String text = "Preferred Sources: ";
+        String text = " ";
         if(preferredSources.contains(w)) {
             preferredSources.remove(w);
-            infoLabel.setText("log: "+w.getName()+" is removed from preferred sources"+"\n"+infoLabel.getText());
+            String message = labels.get(Label.LOG_SOURCE_ADDED);
+            infoLabel.setText("log: "+w.getName()+ " " + message +"\n"+infoLabel.getText());
             infoLabel.setCaretPosition(0);
         } else if(!preferredSources.contains(w)){
             preferredSources.add(w);
-            infoLabel.setText("log: "+w.getName()+" is added to preferred sources"+"\n"+infoLabel.getText());
+            String message = labels.get(Label.LOG_SOURCE_REMOVED);
+            infoLabel.setText("log: "+w.getName()+ " " + message +"\n"+infoLabel.getText());
             infoLabel.setCaretPosition(0);
         }
 
@@ -146,12 +158,9 @@ public class SourceManageService extends JFrame {
     }
 
     public void showFirstTimeMessage() {
-        String firstTimeText = "Welcome to LastNews! Please select sources you interested in. " +
-                "This is a first time setup so you should not have to\ndo this again." +
-                " However, you can adjust your preferred sources anytime you want through menu -> source management." +
-                "\n\nThank you for using LastNews!";
+        String message = labels.get(Label.WELCOME_MESSAGE);
 
-        JOptionPane.showMessageDialog(this,firstTimeText,"Welcome!",JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this,message,"Welcome !",JOptionPane.INFORMATION_MESSAGE);
         this.toFront();
     }
 }
