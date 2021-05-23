@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,10 +49,7 @@ public class SourceParser {
 
     public ArrayList<Website> parseSources(File file) {
         try{
-            FileReader fr = new FileReader(file);
-            BufferedReader br = new BufferedReader(fr);
-
-            wholeText = Files.readString(file.toPath());
+            wholeText = Files.readString(file.toPath(), StandardCharsets.ISO_8859_1);
 
             wholeText = wholeText.replaceAll("\\r\\n|\\n", "");
 
@@ -109,8 +107,6 @@ public class SourceParser {
                 sourceList.add(site);
             }
 
-            br.close();
-            fr.close();
         } catch(IOException e) {
             showFileError(site.getImageFileName());
         }
